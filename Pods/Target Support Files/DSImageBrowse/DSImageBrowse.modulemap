@@ -1,0 +1,6 @@
+framework module DSImageBrowse {
+  umbrella header "DSImageBrowse-umbrella.h"
+
+  export *
+  module * { export * }
+}
