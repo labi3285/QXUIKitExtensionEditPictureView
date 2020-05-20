@@ -10,11 +10,18 @@ import UIKit
 
 open class QXTextField: QXView, UITextFieldDelegate {
     
-    public var respondBeginEditting: (() -> ())?
-    public var respondTextChange: ((_ text: String?, _ isEmpty: Bool) -> ())?
-    public var respondEndEditting: (() -> ())?
-    public var respondReturn: (() -> ())?
+    public var respondBeginEditting: (() -> Void)?
+    public var respondTextChange: ((_ text: String?, _ isEmpty: Bool) -> Void)?
+    public var respondEndEditting: (() -> Void)?
+    public var respondReturn: (() -> Void)?
     
+    open var isEnabled: Bool = true {
+        didSet {
+            uiTextField.isEnabled = isEnabled
+            uiTextField.alpha = isEnabled ? 1 : 0.3
+        }
+    }
+
     public var text: String {
         set {
             uiTextField.text = newValue
@@ -24,13 +31,12 @@ open class QXTextField: QXView, UITextFieldDelegate {
         }
     }
     
-    open var font: QXFont = QXFont(size: 16, color: QXColor.black) {
+    open var font: QXFont = QXFont(16, QXColor.dynamicInput) {
         didSet {
             uiTextField.font = font.uiFont
             uiTextField.textColor = font.color.uiColor
         }
     }
-    
     
     open var placeHolder: String = "" {
         didSet {
@@ -38,7 +44,7 @@ open class QXTextField: QXView, UITextFieldDelegate {
                    qxSetNeedsLayout()
         }
     }
-    open var placeHolderfont: QXFont = QXFont(size: 16, color: QXColor.placeHolderGray) {
+    open var placeHolderfont: QXFont = QXFont(16, QXColor.dynamicPlaceHolder) {
         didSet {
             uiTextField.attributedPlaceholder = placeHolderfont.nsAttributtedString(placeHolder)
             qxSetNeedsLayout()
@@ -47,71 +53,186 @@ open class QXTextField: QXView, UITextFieldDelegate {
     
     public var filter: QXTextFilter? {
         didSet {
-            if let filter = filter {
-                switch filter {
-                case .integer(min: _, max: _):
-                    uiTextField.keyboardType = .decimalPad
-                case .double(min: _, max: _):
-                    uiTextField.keyboardType = .decimalPad
-                case .float(min: _, max: _):
-                    uiTextField.keyboardType = .decimalPad
-                case .number(limit: _):
-                    uiTextField.keyboardType = .numberPad
-                case .money(min: _, max: _):
-                    uiTextField.keyboardType = .decimalPad
-                default:
-                    break
+            uiTextField.qxUpdateFilter(filter)
+        }
+    }
+        
+    public var pickerView: QXPickersView? {
+        didSet {
+            if let e = pickerView {
+                uiTextField.inputView = QXKeyboardView(e)
+                e.respondItem = { [weak self] item in
+                    self?.pickedItems = item?.items()
+                    self?.pickedItem = item
                 }
             }
         }
     }
-        
-    public lazy var uiTextField: UITextField = {
-        let one = UITextField()
-        one.clearButtonMode = .whileEditing
-        one.qxTintColor = QXColor.hex("#666666", 1)
-        one.leftViewMode = .never
-        one.rightViewMode = .never
-        one.delegate = self
-        one.addTarget(self, action: #selector(textChange), for: .editingChanged)
-        return one
-    }()
-        
-    public override init() {
-        super.init()
-        addSubview(uiTextField)
+    public private(set) var pickedItem: QXPickerView.Item?
+    public var pickedTextParser: ([String]?) -> String?
+        = { strs in strs?.joined(separator: "-") }
+    public private(set) var pickedItems: [QXPickerView.Item]? {
+        didSet {
+            text = pickedTextParser(pickedItems?.map{ $0.text }) ?? ""
+            pickedItem = pickedItems?.last
+        }
     }
-    required public init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    public var intrinsicWidth: CGFloat?
-    open override var intrinsicContentSize: CGSize {
-        if isDisplay {
-            var w: CGFloat = 0
-            var h: CGFloat = 0
-            if let e = intrinsicSize {
-                w = e.w
-                h = e.h
-            } else if let e = intrinsicWidth {
-                var size = CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-                size = uiTextField.sizeThatFits(size)
-                w = padding.left + e + padding.right
-                h = padding.top + size.height + padding.bottom
-            } else {
-                let size = uiTextField.intrinsicContentSize
-                w = padding.left + size.width + padding.right
-                h = padding.top + size.height + padding.bottom
-            }
-            return CGSize(width: w, height: h)
-        } else {
-            return CGSize.zero
+    public var bringInPickedItems: [QXPickerView.Item]? {
+        didSet {
+            pickedItems = bringInPickedItems
+            pickerView?.bringInPickedItems = bringInPickedItems
         }
     }
     
-    open override func layoutSubviews() {
+    open var iconView: QXView? {
+        didSet {
+            if let e = oldValue {
+                e.removeFromSuperview()
+            }
+            if let e = iconView {
+                addSubview(e)
+                layoutSubviews()
+            }
+        }
+    }
+    open var clearButton: QXButton? {
+        didSet {
+            if let e = oldValue {
+                e.removeFromSuperview()
+            }
+            if let e = clearButton {
+                addSubview(e)
+                e.isDisplay = text.count > 0
+                layoutSubviews()
+                e.respondClick = { [unowned self] in
+                    self.text = ""
+                }
+            }
+        }
+    }
+    open var handleButton: QXButton? {
+        didSet {
+            if let e = oldValue {
+                e.removeFromSuperview()
+            }
+            if let e = handleButton {
+                addSubview(e)
+                layoutSubviews()
+            }
+        }
+    }
+    
+    public var buttonMargin: CGFloat = 0
+    
+    public final lazy var uiTextField: UITextField = {
+        let e = UITextField()
+        e.clearButtonMode = .never
+        e.qxTintColor = QXColor.dynamicAccent
+        e.leftViewMode = .never
+        e.rightViewMode = .never
+        e.delegate = self
+        e.addTarget(self, action: #selector(textChange), for: .editingChanged)
+        return e
+    }()
+    private var _originUITextFieldQXTintColor: QXColor?
+    public final lazy var coverView: UIView = {
+        let e = UIView()
+        e.backgroundColor = UIColor.clear
+        e.isHidden = true
+        return e
+    }()
+    public override init() {
+        super.init()
+        addSubview(uiTextField)
+        addSubview(coverView)
+    }
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    open override func natureContentSize() -> QXSize {
+        var w: CGFloat = 0
+        var h: CGFloat = 0
+        if let e = fixWidth {
+            var size = CGSize(width: QXView.extendLength, height: QXView.extendLength)
+            size = uiTextField.sizeThatFits(size)
+            w = padding.left + e + padding.right
+            h = padding.top + size.height + padding.bottom
+        } else {
+            let tfwh = uiTextField.intrinsicContentSize
+            var leftSpace: CGFloat = 0
+            var rightSpace: CGFloat = 0
+            var maxH: CGFloat = 0
+            if let e = iconView, e.isDisplay {
+                let wh = e.natureSize
+                leftSpace += wh.w + buttonMargin
+                maxH = max(maxH, wh.h)
+            }
+            if let e = clearButton, e.isDisplay {
+                let wh = e.natureSize
+                rightSpace += wh.w
+                maxH = max(maxH, wh.h)
+            }
+            if let e = handleButton, e.isDisplay {
+                let wh = e.natureSize
+                rightSpace += wh.w
+                maxH = max(maxH, wh.h)
+            }
+            if let a = clearButton, a.isDisplay, let b = handleButton, b.isDisplay {
+                rightSpace += buttonMargin * 2
+            } else if let a = clearButton, a.isDisplay {
+                rightSpace += buttonMargin
+            } else if let b = handleButton, b.isDisplay {
+                rightSpace += buttonMargin
+            }
+            w = padding.left + tfwh.width + leftSpace + rightSpace + padding.right
+            h = padding.left + max(tfwh.height, maxH) + padding.right
+        }
+        return QXSize(w, h)
+    }
+
+    override open func layoutSubviews() {
         super.layoutSubviews()
-        uiTextField.qxRect = qxBounds.rectByReduce(padding)
+        if let i = iconView, i.isDisplay {
+            let whi = i.natureSize
+            i.qxRect = qxBounds.insideRect(.left(padding.left), .center, .size(whi))
+            if let a = clearButton, a.isDisplay, let b = handleButton, b.isDisplay {
+                let wha = a.natureSize
+                let whb = b.natureSize
+                b.qxRect = qxBounds.insideRect(.right(padding.right), .center, .size(whb))
+                a.qxRect = qxBounds.insideRect(.right(padding.right + whb.w + buttonMargin), .center, .size(wha))
+                uiTextField.qxRect = qxBounds.insideRect(.left(padding.left + whi.w + buttonMargin), .top(padding.top), .bottom(padding.bottom), .right(padding.right + buttonMargin + wha.w + buttonMargin + whb.w))
+            } else if let a = clearButton, a.isDisplay {
+                let wha = a.natureSize
+                a.qxRect = qxBounds.insideRect(.right(padding.right), .center, .size(wha))
+                uiTextField.qxRect = qxBounds.insideRect(.left(padding.left + whi.w + buttonMargin), .top(padding.top), .bottom(padding.bottom), .right(padding.right + wha.w + buttonMargin))
+            } else if let b = handleButton, b.isDisplay {
+               let whb = b.natureSize
+               b.qxRect = qxBounds.insideRect(.right(padding.right), .center, .size(whb))
+               uiTextField.qxRect = qxBounds.insideRect(.left(padding.left + whi.w + buttonMargin), .top(padding.top), .bottom(padding.bottom), .right(padding.right + whb.w + buttonMargin))
+            } else {
+                uiTextField.qxRect = qxBounds.insideRect(.left(padding.left + whi.w + buttonMargin), .top(padding.top), .bottom(padding.bottom), .right(padding.right))
+            }
+        } else {
+            if let a = clearButton, a.isDisplay, let b = handleButton, b.isDisplay {
+                let wha = a.natureSize
+                let whb = b.natureSize
+                b.qxRect = qxBounds.insideRect(.right(padding.right), .center, .size(whb))
+                a.qxRect = qxBounds.insideRect(.right(padding.right + whb.w + buttonMargin), .center, .size(wha))
+                uiTextField.qxRect = qxBounds.insideRect(.left(padding.left), .top(padding.top), .bottom(padding.bottom), .right(padding.right + whb.w + buttonMargin + whb.w + buttonMargin + wha.w))
+            } else if let a = clearButton, a.isDisplay {
+                let wha = a.natureSize
+                a.qxRect = qxBounds.insideRect(.right(padding.right), .center, .size(wha))
+                uiTextField.qxRect = qxBounds.insideRect(.left(padding.left), .top(padding.top), .bottom(padding.bottom), .right(padding.right + wha.w + buttonMargin))
+            } else if let b = handleButton, b.isDisplay {
+               let whb = b.natureSize
+               b.qxRect = qxBounds.insideRect(.right(padding.right), .center, .size(whb))
+               uiTextField.qxRect = qxBounds.insideRect(.left(padding.left), .top(padding.top), .bottom(padding.bottom), .right(padding.right + whb.w + buttonMargin))
+            } else {
+                uiTextField.qxRect = qxBounds.rectByReduce(padding)
+            }
+        }
+        coverView.qxRect = uiTextField.qxRect
     }
     
     public var hasSelectRange: Bool {
@@ -130,9 +251,14 @@ open class QXTextField: QXView, UITextFieldDelegate {
     
     public func textFieldDidBeginEditing(_ textField: UITextField) {
         respondBeginEditting?()
+        coverView.isHidden = pickerView == nil
+        if QXEmpty(textField.text) {
+            pickerView?.checkOrPerformSelectAtInit()
+        }
     }
     public func textFieldDidEndEditing(_ textField: UITextField) {
         respondEndEditting?()
+        coverView.isHidden = true
     }
     
     @objc func textChange() {
@@ -143,12 +269,17 @@ open class QXTextField: QXView, UITextFieldDelegate {
                     text = _text
                 }
             }
+            respondTextChange?(text, {
+                if let text = uiTextField.text {
+                    return text.isEmpty
+                }
+                return true
+            }())
         }
-        respondTextChange?(text, {
-            if let text = uiTextField.text {
-                return text.isEmpty
-            }
-            return true
-        }())        
+        clearButton?.isDisplay = text.count > 0
+        layoutSubviews()
     }
 }
+
+
+

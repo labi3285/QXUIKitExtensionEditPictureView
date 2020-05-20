@@ -11,42 +11,80 @@ import QXConsMaker
 
 open class QXSettingTitleTextFieldCell: QXSettingCell {
 
-    public lazy var titleLabel: QXLabel = {
-        let one = QXLabel()
-        one.numberOfLines = 1
-        one.font = QXFont(fmt: "16 #333333")
-        return one
+    open override var isEnabled: Bool {
+        didSet {
+            textField.isEnabled = isEnabled
+            super.isEnabled = isEnabled
+        }
+    }
+    
+    public final lazy var titleLabel: QXLabel = {
+        let e = QXLabel()
+        e.numberOfLines = 1
+        e.font = QXFont(16, QXColor.dynamicTitle)
+        return e
     }()
-    public lazy var textField: QXTextField = {
-        let one = QXTextField()
-        one.intrinsicSize = QXSize(9999, 99)
-        one.font = QXFont(fmt: "16 #333333")
-        one.placeHolderfont = QXFont(fmt: "16 #999999")
-        one.uiTextField.textAlignment = .right
-        one.placeHolder = "输入内容"
-        return one
+    public final lazy var textField: QXTextField = {
+        let e = QXTextField()
+        e.extendSize = true
+        e.font = QXFont(16, QXColor.dynamicInput)
+        e.placeHolderfont = QXFont(16, QXColor.dynamicPlaceHolder)
+        e.uiTextField.textAlignment = .right
+        e.compressResistanceX = QXView.resistanceEasyDeform
+        e.placeHolder = "输入内容"
+        return e
     }()
-    public lazy var layoutView: QXStackView = {
-        let one = QXStackView()
-        one.alignmentY = .center
-        one.alignmentX = .left
-        one.viewMargin = 10
-        one.padding = QXEdgeInsets(5, 15, 5, 15)
-        one.setupViews([self.titleLabel, QXFlexView(), self.textField])
-        return one
+    public final lazy var suffixLabel: QXLabel = {
+        let e = QXLabel()
+        e.respondNeedsLayout = { [weak e, weak self] in
+            e?.isDisplay = !QXEmpty(e?.uiLabel.attributedText?.string ?? e?.uiLabel.text)
+            self?.layoutView.qxSetNeedsLayout()
+        }
+        return e
+    }()
+    public final lazy var layoutView: QXStackView = {
+        let e = QXStackView()
+        e.alignmentY = .center
+        e.alignmentX = .left
+        e.viewMargin = 10
+        e.padding = QXEdgeInsets(5, 15, 5, 15)
+        e.views = [self.titleLabel, QXFlexSpace(), self.textField, self.suffixLabel]
+        return e
     }()
 
-    required public init() {
+    public required init() {
         super.init()
         contentView.addSubview(layoutView)
         layoutView.IN(contentView).LEFT.TOP.RIGHT.BOTTOM.MAKE()
         fixHeight = 50
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
+    }
+    
+    public class SuffixLabel: QXLabel {
+        override public var text: String {
+            didSet {
+                super.text = text
+                isDisplay = !QXEmpty(uiLabel.attributedText?.string ?? uiLabel.text)
+            }
+        }
+        override public var font: QXFont {
+            didSet {
+                super.font = font
+                isDisplay = !QXEmpty(uiLabel.attributedText?.string ?? uiLabel.text)
+            }
+        }
+        override public var richTexts: [QXRichText]? {
+            didSet {
+                super.richTexts = richTexts
+                isDisplay = !QXEmpty(uiLabel.attributedText?.string ?? uiLabel.text)
+            }
+        }
+        
     }
 
 }

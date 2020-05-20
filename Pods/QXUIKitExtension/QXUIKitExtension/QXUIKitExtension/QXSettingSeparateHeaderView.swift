@@ -8,31 +8,32 @@
 
 import UIKit
 
-open class QXSettingSeparateHeaderView: QXStaticBaseHeaderFooterView {
+open class QXSettingSeparateHeaderView: QXStaticHeaderFooterView {
         
-    public lazy var breakLine: QXLineView = {
-        let one = QXLineView.breakLine
-        one.isVertical = false
-        one.isHidden = false
-        one.isUserInteractionEnabled = false
-        return one
+    public final lazy var breakLine: QXLineView = {
+        let e = QXLineView.breakLine
+        e.isVertical = false
+        e.isHidden = false
+        e.isUserInteractionEnabled = false
+        return e
     }()
-    open override func layoutSubviews() {
+    
+    override open func layoutSubviews() {
         super.layoutSubviews()
         let h = breakLine.intrinsicContentSize.height
         breakLine.frame = CGRect(x: 0, y: contentView.frame.height - h, width: contentView.frame.width, height: h)
         bringSubviewToFront(breakLine)
-        fixHeight = 10
     }
         
-    required public init() {
+    public required init() {
         super.init()
         contentView.addSubview(breakLine)
+        fixHeight = 10
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
     }
     

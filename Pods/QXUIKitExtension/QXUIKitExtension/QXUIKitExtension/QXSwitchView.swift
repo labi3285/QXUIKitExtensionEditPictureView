@@ -10,7 +10,16 @@ import UIKit
 
 open class QXSwitchView: QXView {
     
-    public var respondChange: ((_ isOn: Bool) -> ())?
+    public var respondChange: ((_ isOn: Bool) -> Void)?
+    
+    open var isEnabled: Bool {
+        set {
+            uiSwitch.isEnabled = newValue
+        }
+        get {
+            return uiSwitch.isEnabled
+        }
+    }
     
     public var isOn: Bool {
         set {
@@ -21,10 +30,10 @@ open class QXSwitchView: QXView {
         }
     }
         
-    public lazy var uiSwitch: UISwitch = {
-        let one = UISwitch()
-        one.addTarget(self, action: #selector(valueChanged), for: .valueChanged)
-        return one
+    public final lazy var uiSwitch: UISwitch = {
+        let e = UISwitch()
+        e.addTarget(self, action: #selector(valueChanged), for: .valueChanged)
+        return e
     }()
     @objc func valueChanged() {
         respondChange?(uiSwitch.isOn)
@@ -38,19 +47,11 @@ open class QXSwitchView: QXView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    open override var intrinsicContentSize: CGSize {
-        if isDisplay {
-            if let e = intrinsicSize {
-                return e.cgSize
-            } else {
-                let wh = uiSwitch.intrinsicContentSize
-                return CGSize(width: wh.width + padding.left + padding.right, height: wh.height + padding.top + padding.bottom)
-            }
-        } else {
-            return CGSize.zero
-        }
+    open override func natureContentSize() -> QXSize {
+        return uiSwitch.qxIntrinsicContentSize.sizeByAdd(padding)
     }
-    open override func layoutSubviews() {
+
+    override open func layoutSubviews() {
         super.layoutSubviews()
         uiSwitch.qxRect = qxBounds.rectByReduce(padding)
     }

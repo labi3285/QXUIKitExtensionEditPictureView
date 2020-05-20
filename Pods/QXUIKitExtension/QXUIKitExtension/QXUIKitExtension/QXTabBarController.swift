@@ -13,9 +13,9 @@ open class QXTabBarController: UITabBarController {
     /// 在有tabBarBackgroundImage 的情况下无效
     public var isTabBarLineShow: Bool?
     
-    public var tabBarBackgroundColor: QXColor?
+    public var tabBarBackgroundColor: QXColor? = QXColor.dynamicBar
     public var tabBarBackgroundImage: QXImage?
-    public var tabBarTintColor: QXColor?
+    public var tabBarTintColor: QXColor? = QXColor.dynamicAccent
     public var tabBarStyle: UIBarStyle?
     
     public var navigationControllers: [QXNavigationController]? {
@@ -23,8 +23,8 @@ open class QXTabBarController: UITabBarController {
             viewControllers = navigationControllers
         }
     }
-    
-    open override func viewDidLayoutSubviews() {
+
+    override open func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateTabBar()
     }
@@ -61,7 +61,6 @@ open class QXTabBarController: UITabBarController {
         }
         if let e = tabBarTintColor?.uiColor {
             tabBar.tintColor = e
-            tabBar.barStyle = UIBarStyle.black
         }
         if let e = tabBarStyle {
             tabBar.barStyle = e

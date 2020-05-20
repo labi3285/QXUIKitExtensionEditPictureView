@@ -1,7 +1,9 @@
 Pod::Spec.new do |s|
 
+s.swift_versions = "5.0"
+
 s.name         = "QXUIKitExtensionEditPictureView"
-s.version      = "0.0.1"
+s.version      = "0.0.2"
 s.summary      = "QXEditPictrueView UIs base on QXUIKitExtension & TZImagePickerController swift5."
 s.description  = <<-DESC
 UIKit extensions in swift. Just enjoy!

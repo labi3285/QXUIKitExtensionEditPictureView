@@ -8,16 +8,6 @@
 
 import UIKit
 import Alamofire
-import QXJSON
-
-public typealias QXNetworkModelOk<T> = (_ model: T?) -> ()
-public typealias QXNetworkModelsOk<T> = (_ models: [T], _ isThereMore: Bool?) -> ()
-public typealias QXNetworkError = (_ err: QXError?) -> ()
-
-public typealias QXModelsApi<T> = (_ onOk: @escaping QXNetworkModelsOk<T>, _ onError: @escaping QXNetworkError) -> ()
-public typealias QXModelApi<T> = (_ onOk: @escaping QXNetworkModelOk<T>, _ onError: @escaping QXNetworkError) -> ()
-
-
 
 extension QXRequest {
     
@@ -57,6 +47,7 @@ open class QXRequest {
     public enum Method {
         case get
         case post
+        case put
     }
     public enum ParameterEncoding {
         case json
@@ -67,9 +58,9 @@ open class QXRequest {
     /// 地址
     public var url: String = ""
     /// 请求参数
-    public var params: [String: Any]?
+    public var params: [String: Any?]?
     /// 请求头
-    public var headers: [String: String]?
+    public var headers: [String: String?]?
     
     /// 请求类型
     public let method: Method
@@ -77,15 +68,15 @@ open class QXRequest {
     public let encoding: ParameterEncoding
     
     /// 追加的header字段
-    public let appendHeaders: [String: String]?
+    public let appendHeaders: [String: String?]?
     /// 追加的参数
-    public let appendParams: [String: Any]?
+    public let appendParams: [String: Any?]?
     
     /// 测试模式是否打印log
     public var isDebugPrint: Bool = false
-        
+            
     /// 构造方法
-    public init(method: Method, encoding: ParameterEncoding, appendHeaders: [String: String]? = nil, appendParams: [String: Any]? = nil) {
+    public init(method: Method, encoding: ParameterEncoding, appendHeaders: [String: String?]? = nil, appendParams: [String: Any?]? = nil) {
         self.method = method
         self.encoding = encoding
         self.appendHeaders = appendHeaders
@@ -98,14 +89,32 @@ open class QXRequest {
         let name: String
         let suffix: String
     }
-    
+        
     public enum Respond<T> {
         case succeed(_ data: T)
         case failed(_ err: QXError)
     }
+    public enum RespondPage<T> {
+        case succeed(_ models: [T], _ isThereMore: Bool)
+        case failed(_ err: QXError)
+    }
+
+    public static let globalApiManager: Alamofire.SessionManager = {
+        let cfg = URLSessionConfiguration.default
+        cfg.timeoutIntervalForRequest = 10
+        cfg.urlCredentialStorage = nil
+        let e = Alamofire.SessionManager(configuration: cfg)
+        return e
+    }()
+    public static let globalFileManager: Alamofire.SessionManager = {
+        let cfg = URLSessionConfiguration.default
+        cfg.timeoutIntervalForRequest = 60
+        let e = Alamofire.SessionManager(configuration: cfg)
+        return e
+    }()
     
     /// 上传文件
-    public func uploadFormData(file: File, done: @escaping (_ respond: Respond<Any>) -> ()) {
+    public func uploadFormData(file: File, done: @escaping (_ respond: Respond<Any>) -> Void) {
         assert(self.url.count > 0, "请填写url")
         let url = self.url
         let method = _makeMethod()
@@ -116,7 +125,7 @@ open class QXRequest {
             let headers = (headers as NSDictionary?)?.description ?? "nil"
             QXDebugPrint("QXRequest/Upload:\(url)\nHEADERS:\(headers)\nPARAMS:\(params)")
         }
-        Alamofire.upload(multipartFormData: { (formData) in
+        QXRequest.globalFileManager.upload(multipartFormData: { (formData) in
             for (k, v) in params ?? [:] {
                 formData.append("\(v)".data(using: .utf8)!, withName: k)
             }
@@ -148,7 +157,7 @@ open class QXRequest {
     }
     
     /// 上传文件列表
-    public func uploadFormDatas(files: [File], done: @escaping (_ respond: Respond<Any>) -> ()) {
+    public func uploadFormData(files: [File], done: @escaping (_ respond: Respond<Any>) -> Void) {
         assert(self.url.count > 0, "请填写url")
         let url = self.url
         let method = _makeMethod()
@@ -159,7 +168,7 @@ open class QXRequest {
             let headers = (headers as NSDictionary?)?.description ?? "nil"
             QXDebugPrint("QXRequest/Upload:\(url)\nHEADERS:\(headers)\nPARAMS:\(params)")
         }
-        Alamofire.upload(multipartFormData: { (formData) in
+        QXRequest.globalFileManager.upload(multipartFormData: { (formData) in
             for (k, v) in params ?? [:] {
                 formData.append("\(v)".data(using: .utf8)!, withName: k)
             }
@@ -193,7 +202,7 @@ open class QXRequest {
     }
     
     /// 请求 data
-    public func fetchData(done: @escaping (_ respond: Respond<Any>) -> ()) {
+    public func fetchData(done: @escaping (_ respond: Respond<Any>) -> Void) {
         QXDebugAssert(url.count > 0, "请填写url")
         let url = self.url
         let method = _makeMethod()
@@ -207,26 +216,30 @@ open class QXRequest {
             QXDebugPrint("QXRequest/\(method):\(url)\nHEADERS:\(headers)\nPARAMS:\(params)")
         }
         
-        Alamofire
+        QXRequest.globalApiManager
             .request(url, method: method, parameters: params, encoding: encoding, headers: headers)
             .validate()
             .responseJSON { (response) in
                 if let e = response.result.value {
                     done(.succeed(e))
                 } else {
+                    var err: QXError
                     if let e = response.error as? AFError {
-                        done(.failed(e.toQXError()))
+                        err = e.toQXError()
                     } else if let e = response.error as NSError?  {
-                        done(.failed(QXError(e.code, "网络错误")))
+                        err = QXError(e.code, "网络错误")
                     } else {
+                        err = QXError.unknown
                         done(.failed(QXError.unknown))
                     }
+                    err.info = response.data
+                    done(.failed(err))
                 }
         }
     }
     
     /// 请求 arr
-    public func fetchArray(done: @escaping (_ respond: Respond<[Any]>) -> ()) {
+    public func fetchArray(done: @escaping (_ respond: Respond<[Any]>) -> Void) {
         fetchData { (respond) in
             switch respond {
             case .succeed(let t):
@@ -242,7 +255,7 @@ open class QXRequest {
     }
     
     /// 请求 dic
-    public func fetchDictionary(done: @escaping (_ respond: Respond<[String: Any]>) -> ()) {
+    public func fetchDictionary(done: @escaping (_ respond: Respond<[String: Any]>) -> Void) {
         fetchData { (respond) in
             switch respond {
             case .succeed(let t):
@@ -267,6 +280,8 @@ extension QXRequest {
             return HTTPMethod.get
         case .post:
             return HTTPMethod.post
+        case .put:
+            return HTTPMethod.put
         }
     }
     fileprivate func _makeEncoding() -> Alamofire.ParameterEncoding {
@@ -281,37 +296,45 @@ extension QXRequest {
     }
     
     fileprivate func _makeHeaders() -> [String: String]? {
-        var one = [String: String]()
+        var e = [String: String]()
         if let headers = appendHeaders {
             for (key, value) in headers {
-                one[key] = value
+                if let value = value {
+                    e[key] = value
+                }
             }
         }
         if let headers = headers {
             for (key, value) in headers {
-                one[key] = value
+                if let value = value {
+                    e[key] = value
+                }
             }
         }
-        if one.count > 0 {
-            return one
+        if e.count > 0 {
+            return e
         }
         return nil
     }
     
     fileprivate func _makeParams() -> [String: Any]? {
-        var one = [String: Any]()
+        var e = [String: Any]()
         if let params = appendParams {
             for (key, value) in params {
-                one[key] = value
+                if let value = value {
+                    e[key] = value
+                }
             }
         }
         if let params = params {
             for (key, value) in params {
-                one[key] = value
+                if let value = value {
+                    e[key] = value
+                }
             }
         }
-        if one.count > 0 {
-            return one
+        if e.count > 0 {
+            return e
         }
         return nil
     }
@@ -319,9 +342,6 @@ extension QXRequest {
 }
 
 extension AFError {
-    func toUserQXError() -> QXError {
-        return QXError(-1, "访问出错")
-    }
     func toQXError() -> QXError {
         switch self {
         case .invalidURL(url: _):
@@ -348,6 +368,7 @@ extension AFError {
         }
     }
 }
+
 
 
 

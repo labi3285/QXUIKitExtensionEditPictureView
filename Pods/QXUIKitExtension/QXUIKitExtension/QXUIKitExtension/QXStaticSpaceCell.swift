@@ -9,16 +9,21 @@
 import UIKit
 import QXConsMaker
 
-open class QXStaticSpaceCell: QXStaticBaseCell {
+open class QXStaticSpaceCell: QXStaticCell {
     
-    required public init() {
+    convenience public init(height: CGFloat) {
+        self.init()
+        self.fixHeight = height
+    }
+    
+    public required init() {
         super.init()
         fixHeight = 10
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
     }
     

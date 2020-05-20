@@ -8,36 +8,36 @@
 
 import UIKit
 
-open class QXSettingCell: QXStaticBaseCell {
+open class QXSettingCell: QXStaticCell {
     
-    open override func initializedWithTable() {
-        super.initializedWithTable()
-        breakLine.isHidden = isLastCellInSection || isBreakLineHidden
+    override open func contextDidSetup() {
+        super.contextDidSetup()
+        breakLine.isHidden = context.isLastCellInSection || isBreakLineHidden
     }
-    
+        
     public var isBreakLineHidden: Bool = false
-    public lazy var breakLine: QXLineView = {
-        let one = QXLineView.breakLine
-        one.isVertical = false
-        one.padding = QXEdgeInsets(0, 0, 0, 15)
-        one.isUserInteractionEnabled = false
-        return one
+    public final lazy var breakLine: QXLineView = {
+        let e = QXLineView.breakLine
+        e.isVertical = false
+        e.padding = QXEdgeInsets(0, 0, 0, 15)
+        e.isUserInteractionEnabled = false
+        return e
     }()
-
-    required public init() {
+    
+    public required init() {
         super.init()
         contentView.addSubview(breakLine)
-        contentView.qxBackgroundColor = QXColor.white
+        contentView.qxBackgroundColor = QXColor.dynamicBody
         fixHeight = 50
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
     }
     
-    open override func layoutSubviews() {
+    override open func layoutSubviews() {
         super.layoutSubviews()
         let h = breakLine.intrinsicContentSize.height
         breakLine.frame = CGRect(x: 0, y: contentView.frame.height - h, width: contentView.frame.width, height: h)

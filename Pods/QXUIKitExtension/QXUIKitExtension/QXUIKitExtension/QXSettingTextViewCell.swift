@@ -11,8 +11,15 @@ import QXConsMaker
 
 open class QXSettingTextViewCell: QXSettingCell {
 
-    open override func height(_ model: Any?, _ width: CGFloat) -> CGFloat? {
-        textView.intrinsicWidth = width - textView.padding.left - textView.padding.right
+    open override var isEnabled: Bool {
+        didSet {
+            textView.isEnabled = isEnabled
+            super.isEnabled = isEnabled
+        }
+    }
+    
+    open override func height(_ model: Any?) -> CGFloat? {
+        textView.fixWidth = context.givenWidth - textView.padding.left - textView.padding.right
         let h = textView.intrinsicContentSize.height
         if let _h = fixHeight {
             return max(_h, h)
@@ -20,28 +27,28 @@ open class QXSettingTextViewCell: QXSettingCell {
         return h
     }
 
-    public lazy var textView: QXTextView = {
-        let one = QXTextView()
-        one.padding = QXEdgeInsets(5, 10, 5, 10)
-        one.font = QXFont(fmt: "16 #333333")
-        one.placeHolderfont = QXFont(fmt: "16 #999999")
-        one.uiTextView.isScrollEnabled = false
-        one.respondNeedsUpdate = { [weak self] in
-            self?.tableView?.update()
+    public final lazy var textView: QXTextView = {
+        let e = QXTextView()
+        e.padding = QXEdgeInsets(5, 10, 5, 10)
+        e.font = QXFont(16, QXColor.dynamicInput)
+        e.placeHolderfont = QXFont(16, QXColor.dynamicPlaceHolder)
+        e.uiTextView.isScrollEnabled = false
+        e.respondNeedsUpdate = { [weak self] in
+            self?.context.tableView?.update()
         }
-        return one
+        return e
     }()
 
-    required public init() {
+    public required init() {
         super.init()
         contentView.addSubview(textView)
         textView.IN(contentView).LEFT.TOP.RIGHT.BOTTOM.MAKE()
         fixHeight = 100
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
     }
 

@@ -11,28 +11,30 @@ import QXConsMaker
 
 open class QXSettingTextCell: QXSettingCell {
     
-    open override func height(_ model: Any?, _ width: CGFloat) -> CGFloat? {
-        label.intrinsicWidth = width
+    open override func height(_ model: Any?) -> CGFloat? {
+        label.fixWidth = context.givenWidth
         return label.intrinsicContentSize.height
     }
 
-    public lazy var label: QXLabel = {
-        let one = QXLabel()
-        one.numberOfLines = 0
-        one.font = QXFont(fmt: "15 #333333")
-        one.padding = QXEdgeInsets(10, 15, 10, 15)
-        return one
+    public final lazy var label: QXRichLabel = {
+        let e = QXRichLabel()
+        e.numberOfLines = 0
+        e.font = QXFont(15, QXColor.dynamicText)
+        e.padding = QXEdgeInsets(10, 15, 10, 15)
+        e.isCopyEnabled = true
+        return e
     }()
 
-    required public init() {
+    public required init() {
         super.init()
         contentView.addSubview(label)
         label.IN(contentView).LEFT.RIGHT.TOP.BOTTOM.MAKE()
+        fixHeight = nil
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
     }
     

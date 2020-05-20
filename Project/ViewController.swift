@@ -12,27 +12,27 @@ import QXUIKitExtension
 class ViewController: QXTableViewController<Any> {
     
     lazy var pictureCell: QXSettingTitlePictureCell = {
-        let one = QXSettingTitlePictureCell()
-        one.titleLabel.text = "选择图片"
-        return one
+        let e = QXSettingTitlePictureCell()
+        e.titleLabel.text = "选择图片"
+        return e
     }()
     lazy var picturesCell: QXSettingPicturesCell = {
-        let one = QXSettingPicturesCell()
-        return one
+        let e = QXSettingPicturesCell()
+        return e
     }()
    
     lazy var section: QXTableViewSection = {
-        let one = QXTableViewSection([
+        let e = QXTableViewSection([
             self.pictureCell,
             self.picturesCell,
         ], QXSettingSeparateHeaderView(), QXSettingSeparateFooterView())
-        return one
+        return e
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "首页"
-        view.qxBackgroundColor = QXColor.backgroundGray
+        contentView.backColor = QXColor.dynamicBackgroundGray
         tableView.sections = [section]
         
         /* Info.plist

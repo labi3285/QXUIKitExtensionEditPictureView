@@ -16,12 +16,28 @@ public struct QXRect {
     /// default init
     public init() { }
     
+    public static let zero = QXRect()
+    
     /// init with x/y/width/height
     public init(_ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat) {
         self.x = x
         self.y = y
         self.w = w
         self.h = h
+    }
+    
+    /// init with size
+    public init(_ size: QXSize) {
+        self.x = 0
+        self.y = 0
+        self.w = size.w
+        self.h = size.h
+    }
+    public init(_ size: CGSize) {
+        self.x = 0
+        self.y = 0
+        self.w = size.width
+        self.h = size.height
     }
     
     //MARK:-
@@ -557,7 +573,7 @@ extension QXRect {
     }
     
     public var isZero: Bool {
-        return x == 0 && y == 0 && w == 0 && h == 0
+        return w == 0 || h == 0
     }
     
 }
@@ -581,13 +597,13 @@ extension QXSize: CustomStringConvertible {
     
     public var description: String {
         func string(_ f: CGFloat) -> String {
-            if f == CGFloat(Int(f)) {
+            if f == CGFloat(Int64(f)) {
                 return "\(Int(f))"
             } else {
                 return "\(f)"
             }
         }
-        return "[\(string(w)),\(string(h))]"
+        return "[\(w),\(h)]"
     }
     
 }

@@ -15,9 +15,9 @@ public struct QXSize {
     
     public static let zero = QXSize()
     public var isZero: Bool {
-        return w == 0 && h == 0
+        return w == 0 || h == 0
     }
-    
+        
     public init() {
         self.w = 0
         self.h = 0
@@ -34,6 +34,11 @@ public struct QXSize {
     public init(_ w: Int, _ h: Int) {
         self.w = CGFloat(w)
         self.h = CGFloat(h)
+    }
+    
+    public mutating func apply(_ scale: CGFloat) {
+        w = w * scale
+        h = h * scale
     }
     
 }

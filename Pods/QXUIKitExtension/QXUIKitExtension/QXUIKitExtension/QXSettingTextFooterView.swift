@@ -11,29 +11,29 @@ import QXConsMaker
 
 open class QXSettingTextFooterView: QXSettingSeparateFooterView {
     
-    open override func height(_ model: Any?, _ width: CGFloat) -> CGFloat? {
-        label.intrinsicWidth = width
+    open override func height(_ model: Any?) -> CGFloat? {
+        label.fixWidth = context.givenWidth
         return label.intrinsicContentSize.height
     }
     
-    public lazy var label: QXLabel = {
-        let one = QXLabel()
-        one.numberOfLines = 0
-        one.padding = QXEdgeInsets(5, 15, 10, 15)
-        one.font = QXFont(fmt: "12 #999999")
-        return one
+    public final lazy var label: QXRichLabel = {
+        let e = QXRichLabel()
+        e.numberOfLines = 0
+        e.padding = QXEdgeInsets(5, 15, 10, 15)
+        e.font = QXFont(12, QXColor.dynamicTip)
+        return e
     }()
 
-    required public init() {
+    public required init() {
         super.init()
         contentView.addSubview(label)
         label.IN(contentView).LEFT.RIGHT.TOP.BOTTOM.MAKE()
     }
     
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
     }
     

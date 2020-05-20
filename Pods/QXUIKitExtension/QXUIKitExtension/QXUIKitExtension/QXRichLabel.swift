@@ -20,7 +20,7 @@ open class QXRichLabel: QXView {
     }
     
     /// font for single text
-    public var font: QXFont = QXFont(size: 14, color: QXColor.hex("#000000", 1)) {
+    public var font: QXFont = QXFont(14, QXColor.dynamicText) {
         didSet {
             items = [Item.text(string: text, font: font, linkData: nil)]
         }
@@ -64,7 +64,7 @@ open class QXRichLabel: QXView {
     }
     
     /// link responder
-    public var respondTouchLink: ((_ data: Any) -> ())?
+    public var respondTouchLink: ((_ data: Any) -> Void)?
     
     /// alignment at x direction
     public var alignmentX: QXAlignmentX = .left
@@ -90,42 +90,68 @@ open class QXRichLabel: QXView {
     public var hyphenationFactor: CGFloat = 0
     
     /// highlight color
-    public var highlightColor: QXColor = QXColor.hex("#66b3ff", 1)
+    public var highlightColor: QXColor = QXColor.dynamicHiglight
+    
+    //MARK:- COPY
+    public var isCopyEnabled: Bool = false {
+        didSet {
+            if isCopyEnabled {
+                addGestureRecognizer(longGestureRecognizer)
+            } else {
+                removeGestureRecognizer(longGestureRecognizer)
+            }
+        }
+    }
+    private final lazy var longGestureRecognizer: UILongPressGestureRecognizer = {
+        let e = UILongPressGestureRecognizer(target: self, action: #selector(longPressed(_:)))
+        return e
+    }()
+    @objc func longPressed(_ recognizer: UILongPressGestureRecognizer) {
+        if recognizer.state == .began {
+            self.becomeFirstResponder()
+            let copyMenu = UIMenuItem(title: "复制", action: #selector(copyitem(menuVc:)))
+            let menu = UIMenuController.shared
+            menu.menuItems = [copyMenu]
+            menu.setTargetRect(bounds.qxFrameByReduce(padding.uiEdgeInsets), in: self)
+            menu.arrowDirection = .down
+            menu.update()
+            menu.setMenuVisible(true, animated: true)
+        }
+    }
+    @objc func copyitem(menuVc: UIMenuController) {
+        UIPasteboard.general.string = text
+    }
+    override open var canBecomeFirstResponder: Bool {
+        return isCopyEnabled
+    }
+    override open func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action == #selector(copyitem(menuVc:)) && isCopyEnabled {
+           return true
+        }
+        return false
+    }
     
     /// line height tolerance, nil for auto. Normaly when asc and none-asc mix in one line will result in a change of line height. this property will prevent from doing this by fix line height by lineHeightTolerance * font-size. [warning] you must be sure to have attaches NO BIGGER than this when set to yes. 1.1 is currently the fit value for charactors
     public var lineHeightTolerance: CGFloat? = 1.1
     
     /// calculate size for width, nil width for no limit
     public func sizeForWidth(_ width: CGFloat?) -> CGSize {
-        return _getAttibuttedStringIntrinsicSize(_getContent(items).attributtedString, width)
+        return _getAttibuttedStringfixSize(_getContent(items).attributtedString, width)
     }
-    
-    
-    /// intrinsic width for auto-layout
-    public var intrinsicWidth: CGFloat?
-    /// the auto calculate size
-    open override var intrinsicContentSize: CGSize {
-        if isDisplay {
-            if let e = intrinsicSize {
-                return e.cgSize
-            } else {
-                return _getAttibuttedStringIntrinsicSize(_getContent(items).attributtedString, intrinsicWidth)
-            }
-        } else {
-            return CGSize.zero
-        }
+    open override func natureContentSize() -> QXSize {
+        return _getAttibuttedStringfixSize(_getContent(items).attributtedString, maxWidth ?? fixWidth).qxSize
     }
-    
+
     /// init
     public override init() {
         super.init()
         backgroundColor = UIColor.clear
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    open override func layoutSubviews() {
+    override open func layoutSubviews() {
         super.layoutSubviews()
         let content = _getContent(items)
         var links = content.links
@@ -164,7 +190,7 @@ open class QXRichLabel: QXView {
             }
         }
     }
-    open override func draw(_ rect: CGRect) {
+    override open func draw(_ rect: CGRect) {
         super.draw(rect)
         guard let ctx = UIGraphicsGetCurrentContext() else {
             return
@@ -196,7 +222,7 @@ open class QXRichLabel: QXView {
         }
         ctx.restoreGState()
     }
-    open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let point = touches.first?.location(in: self) else { return }
         _touchedLocation = point
         _touchedLink = _tryCatchTouchedLink(point, _links)
@@ -204,14 +230,14 @@ open class QXRichLabel: QXView {
             setNeedsDisplay()
         }
     }
-    open override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override open func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let point = touches.first?.location(in: self) else { return }
         if sqrt(pow(point.x - _touchedLocation.x, 2) + pow(point.y - _touchedLocation.y, 2)) > 10 {
             _touchedLink = nil
             setNeedsDisplay()
         }
     }
-    open override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override open func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if _isHiglight {
             return
         }
@@ -225,8 +251,8 @@ open class QXRichLabel: QXView {
             }
         }
     }
-    open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if let _ = super.hitTest(point, with: event) {
+    override open func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if let e = super.hitTest(point, with: event) {
             for view in subviews {
                 if view.isUserInteractionEnabled {
                     let point = view.convert(point, from: self)
@@ -237,6 +263,9 @@ open class QXRichLabel: QXView {
             }
             if _tryCatchTouchedLink(point, _links) != nil {
                 return self
+            }
+            if isCopyEnabled {
+                return e
             }
             return nil
         }
@@ -302,7 +331,7 @@ extension QXRichLabel {
         }
         let style = NSMutableParagraphStyle()
         style.lineSpacing = lineSpace
-        style.paragraphSpacing = paragraphSpace - self.lineSpace
+        style.paragraphSpacing = max(paragraphSpace - self.lineSpace, 0)
         style.lineBreakMode = .byCharWrapping
         if let lineHeightTolerance = lineHeightTolerance {
             var maxNeedsHeight: CGFloat = 0
@@ -377,14 +406,14 @@ extension QXRichLabel {
         let buffer = UnsafeMutablePointer<Attachment>.allocate(capacity: 1)
         buffer.initialize(to: attach)
         let runDelegate = CTRunDelegateCreate(&callBacks, buffer)!
-        let font = QXFont(size: attach.size.height, color: QXColor.hex("#000000", 1))
+        let font = QXFont(attach.size.height, QXColor.hex("#000000", 1))
         let attri = font.nsAttributtedString("\u{FFFC}")
         let mAttri = NSMutableAttributedString(attributedString: attri)
         mAttri.addAttribute(kCTRunDelegateAttributeName as NSAttributedString.Key, value: runDelegate, range: NSRange(location: 0, length: mAttri.length))
         return mAttri.copy() as! NSAttributedString
     }
-    private func _getAttibuttedStringIntrinsicSize(_ attri: NSAttributedString, _ limitWidth: CGFloat?) -> CGSize {
-        let limitRect = CGRect(x: 0, y: 0, width: limitWidth ?? CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+    private func _getAttibuttedStringfixSize(_ attri: NSAttributedString, _ limitWidth: CGFloat?) -> CGSize {
+        let limitRect = CGRect(x: 0, y: 0, width: limitWidth ?? QXView.extendLength, height: QXView.extendLength)
         let ctFrame = __getCtFrame(attri, limitRect)
         let ctLines = __getCtLines(ctFrame)
         var c = ctLines.count
@@ -395,10 +424,10 @@ extension QXRichLabel {
         }
         let size: CGSize
         if let limitWidth = limitWidth {
-            let limitSize = CGSize(width: limitWidth - padding.left - padding.right, height: CGFloat.greatestFiniteMagnitude)
+            let limitSize = CGSize(width: limitWidth - padding.left - padding.right, height: QXView.extendLength)
             size = __getCtShowLinesSize(ctLines, c, attri, limitSize)
         } else {
-            let limitSize = CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+            let limitSize = CGSize(width: QXView.extendLength, height: QXView.extendLength)
             size = __getCtShowLinesSize(ctLines, c, attri, limitSize)
         }
         return CGSize(width: padding.left + padding.right + ceil(size.width + 0.6),
@@ -643,3 +672,4 @@ extension QXRichLabel {
     }
     
 }
+

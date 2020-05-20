@@ -14,7 +14,7 @@ public protocol QXRefreshHeaderDateHandlerProtocol {
 }
 public struct QXRefreshHeaderDateHandler: QXRefreshHeaderDateHandlerProtocol {
     public func qxRefreshDateToRichText(_ date: QXDate) -> QXRichText? {
-        return QXRichText.text(date.string(.nature_chinese, "--"), QXFont(fmt: "14 #333333"))
+        return QXRichText.text(date.string(.nature_chinese, "--"), QXFont(14, QXColor.dynamicText))
     }
 }
 
@@ -27,13 +27,13 @@ open class QXRefreshHeader: MJRefreshHeader {
     }
     
     public var textNormal: QXRichText?
-        = QXRichText.text("下拉可以刷新", QXFont(fmt: "14 #333333"))
+        = QXRichText.text("下拉可以刷新", QXFont(14, QXColor.dynamicText))
     public var textPulling: QXRichText?
-        = QXRichText.text("松开立即刷新", QXFont(fmt: "14 #333333"))
+        = QXRichText.text("松开立即刷新", QXFont(14, QXColor.dynamicText))
     public var textLoading: QXRichText?
-        = QXRichText.text("正在刷新数据中...", QXFont(fmt: "14 #333333"))
+        = QXRichText.text("正在刷新数据中...", QXFont(14, QXColor.dynamicText))
     public var textDatePrefix: QXRichText?
-        = QXRichText.text("上次更新时间：", QXFont(fmt: "14 #333333"))
+        = QXRichText.text("上次更新时间：", QXFont(14, QXColor.dynamicText))
     
     public var dateHandler: QXRefreshHeaderDateHandlerProtocol = QXRefreshHeaderDateHandler()
     
@@ -42,32 +42,35 @@ open class QXRefreshHeader: MJRefreshHeader {
     public var customizedImageLoading: QXImage?
 
     public var imageRefreshArrow: QXImage?
-        = QXUIKitExtensionResources.shared.image("icon_refresh_arrow").setSize(24, 24)
+        = QXUIKitExtensionResources.shared.image("icon_refresh_arrow")
+            .setSize(24, 24)
+            .setRenderingMode(.alwaysTemplate)
     
-    public lazy var messageLabel: QXLabel = {
-        let one = QXLabel()
-        one.uiLabel.textAlignment = .center
-        return one
+    public final lazy var messageLabel: QXLabel = {
+        let e = QXLabel()
+        e.uiLabel.textAlignment = .center
+        return e
     }()
-    public lazy var dateLabel: QXLabel = {
-        let one = QXLabel()
-        one.uiLabel.textAlignment = .center
-        return one
+    public final lazy var dateLabel: QXLabel = {
+        let e = QXLabel()
+        e.uiLabel.textAlignment = .center
+        return e
     }()
-    public lazy var imageView: QXImageView = {
-        let one = QXImageView()
-        one.padding = QXEdgeInsets(0, 5, 0, 5)
-        return one
+    public final lazy var imageView: QXImageView = {
+        let e = QXImageView()
+        e.padding = QXEdgeInsets(0, 5, 0, 5)
+        return e
     }()
-    public lazy var arrowView: QXImageView = {
-        let one = QXImageView()
-        one.qxTintColor = QXColor.fmtHex("#333333")
-        one.padding = QXEdgeInsets(0, 5, 0, 5)
-        return one
+    public final lazy var arrowView: QXImageView = {
+        let e = QXImageView()
+        e.qxTintColor = QXColor.dynamicTitle
+        e.uiImageView.qxTintColor = QXColor.dynamicTitle
+        e.padding = QXEdgeInsets(0, 10, 0, 10)
+        return e
     }()
     public var loadingView: QXActivityIndicatorView = {
-        let e = QXActivityIndicatorView(systemView: UIActivityIndicatorView(style: .gray))
-        e.margin = QXEdgeInsets(0, 5, 0, 5)
+        let e = QXActivityIndicatorView()
+        e.padding = QXEdgeInsets(0, 10, 0, 10)
         return e
         }() {
         didSet {
@@ -80,12 +83,12 @@ open class QXRefreshHeader: MJRefreshHeader {
         }
     }
     
-    open override func prepare() {
+    override open func prepare() {
         super.prepare()
         mj_h = fixHeight
     }
     
-    open override func placeSubviews() {
+    override open func placeSubviews() {
         super.placeSubviews()
         qxCheckOrAddSubview(loadingView)
         qxCheckOrAddSubview(imageView)
@@ -93,27 +96,27 @@ open class QXRefreshHeader: MJRefreshHeader {
         qxCheckOrAddSubview(messageLabel)
         qxCheckOrAddSubview(dateLabel)
         if isCustomised {
-            let imageSize = imageView.intrinsicContentSize
+            let imageSize = imageView.natureSize
             let rect = self.qxBounds
             imageView.qxRect = rect.insideRect(.center, .size(imageSize))
         } else {
-            let loadingSize = loadingView.intrinsicContentSize
-            let arrowSize = arrowView.intrinsicContentSize
-            let messageSize = messageLabel.intrinsicContentSize
-            let dateSize = dateLabel.intrinsicContentSize
-            let textWidth = max(dateSize.width, messageSize.width)
-            let iconWidth = max(arrowSize.width, loadingSize.width)
+            let loadingSize = loadingView.natureSize
+            let arrowSize = arrowView.natureSize
+            let messageSize = messageLabel.natureSize
+            let dateSize = dateLabel.natureSize
+            let textWidth = max(dateSize.w, messageSize.w)
+            let iconWidth = max(arrowSize.w, loadingSize.w)
             let rect = self.qxBounds
             let left = (rect.w - iconWidth - textWidth) / 2
             loadingView.qxRect = rect.insideRect(.left(left), .center, .size(loadingSize))
             arrowView.qxRect = rect.insideRect(.left(left), .center, .size(arrowSize))
-            messageLabel.qxRect = rect.insideRect(.left(left + iconWidth), .top(7), .size(textWidth, messageSize.height))
-            dateLabel.qxRect = rect.insideRect(.left(left + iconWidth), .bottom(7), .size(textWidth, dateSize.height))
+            messageLabel.qxRect = rect.insideRect(.left(left + iconWidth), .top(7), .size(textWidth, messageSize.h))
+            dateLabel.qxRect = rect.insideRect(.left(left + iconWidth), .bottom(7), .size(textWidth, dateSize.h))
         }
     }
     private var isCustomised: Bool = false
     
-    open override var state: MJRefreshState {
+    override open var state: MJRefreshState {
         didSet {
             super.state = state
             messageLabel.isDisplay = true
@@ -197,38 +200,37 @@ open class QXRefreshFooter: MJRefreshAutoFooter {
     }
     
     public var textNormal: QXRichText?
-        = QXRichText.text("点击或上拉加载更多", QXFont(fmt: "14 #333333"))
+        = QXRichText.text("点击或上拉加载更多", QXFont(14, QXColor.dynamicText))
     public var textLoading: QXRichText?
-        = QXRichText.text("正在加载更多的数据...", QXFont(fmt: "14 #333333"))
+        = QXRichText.text("正在加载更多的数据...", QXFont(14, QXColor.dynamicText))
     public var textNoMoreData: QXRichText?
-        = QXRichText.text("已经全部加载完毕", QXFont(fmt: "14 #333333"))
+        = QXRichText.text("已经全部加载完毕", QXFont(14, QXColor.dynamicText))
     
     public var imageNormal: QXImage?
     public var imageLoading: QXImage?
     public var imageNoMoreData: QXImage?
     
-    public lazy var messageLabel: QXLabel = {
-        let one = QXLabel()
-        return one
+    public final lazy var messageLabel: QXLabel = {
+        let e = QXLabel()
+        return e
     }()
-    public lazy var imageView: QXImageView = {
-        let one = QXImageView()
-        one.padding = QXEdgeInsets(0, 5, 0, 5)
-        one.backgroundColor = UIColor.red
-        return one
+    public final lazy var imageView: QXImageView = {
+        let e = QXImageView()
+        e.padding = QXEdgeInsets(0, 5, 0, 5)
+        return e
     }()
-    public lazy var backButton: QXButton = {
-        let one = QXButton()
-        one.respondClick = { [weak self] in
+    public final lazy var backButton: QXButton = {
+        let e = QXButton()
+        e.respondClick = { [weak self] in
             if let s = self, s.state == .idle {
                 s.beginRefreshing()
             }
         }
-        return one
+        return e
     }()
     public var loadingView: QXActivityIndicatorView = {
-        let e = QXActivityIndicatorView(systemView: UIActivityIndicatorView(style: .gray))
-        e.margin = QXEdgeInsets(0, 5, 0, 5)
+        let e = QXActivityIndicatorView()
+        e.padding = QXEdgeInsets(0, 5, 0, 5)
         return e
         }() {
         didSet {
@@ -241,12 +243,12 @@ open class QXRefreshFooter: MJRefreshAutoFooter {
         }
     }
     
-    open override func prepare() {
+    override open func prepare() {
         super.prepare()
         mj_h = fixHeight
     }
 
-    open override func placeSubviews() {
+    override open func placeSubviews() {
         super.placeSubviews()
         qxCheckOrAddSubview(backButton)
         qxCheckOrAddSubview(loadingView)
@@ -263,7 +265,7 @@ open class QXRefreshFooter: MJRefreshAutoFooter {
         messageLabel.qxRect = imageView.qxRect.rightRect(.center, .size(messageSize))
     }
     
-    open override var state: MJRefreshState {
+    override open var state: MJRefreshState {
         didSet {
             super.state = state
             switch state {
@@ -280,7 +282,7 @@ open class QXRefreshFooter: MJRefreshAutoFooter {
                     imageView.isDisplay = true
                 }
             case .noMoreData:
-                messageLabel.richText = textNormal
+                messageLabel.richText = textNoMoreData
                 messageLabel.isDisplay = imageNoMoreData == nil && textNoMoreData != nil
                 imageView.isDisplay = imageNoMoreData != nil
                 imageView.image = imageNoMoreData
@@ -322,14 +324,26 @@ extension UIScrollView {
 }
 
 public protocol QXRefreshableViewProtocol {
+    func qxResetOffset()
     func qxDisableAutoInserts()
     func qxUpdateModels(_ models: [Any])
     func qxSetRefreshHeader(_ header: QXRefreshHeader?)
     func qxSetRefreshFooter(_ footer: QXRefreshFooter?)
+    func qxAddSubviewToRefreshableView(_ view: UIView)
+    func qxRefreshableViewFrame() -> CGRect
     func qxReloadData()
 }
 
 extension UIScrollView: QXRefreshableViewProtocol {
+    @objc public func qxAddSubviewToRefreshableView(_ view: UIView) {
+        addSubview(view)
+    }
+    @objc public func qxRefreshableViewFrame() -> CGRect {
+        return frame
+    }
+    @objc public func qxResetOffset() {
+        contentOffset = CGPoint.zero
+    }
     @objc public func qxDisableAutoInserts() {
         if #available(iOS 11.0, *) {
             contentInsetAdjustmentBehavior = .never
@@ -361,3 +375,4 @@ extension UICollectionView {
         reloadData()
     }
 }
+

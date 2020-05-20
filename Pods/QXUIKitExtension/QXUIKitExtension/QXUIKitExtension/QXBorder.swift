@@ -31,16 +31,15 @@ open class QXBorder {
         self.color = QXColor.fmtHex(fmtHex)
     }
     
-    public static var border: QXBorder {
-        return QXBorder().setColor(QXColor.borderGray).setLineWidth(1).setCornerRadius(5)
-    }
 }
 
 extension CALayer {
     
     open var qxBorder: QXBorder? {
         set {
-            borderColor = newValue?.color?.uiColor.cgColor
+            if let e = newValue?.color?.uiColor.cgColor {
+                 borderColor = e
+            }
             if let e = newValue?.lineWidth {
                 borderWidth = e
             }

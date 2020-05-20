@@ -9,54 +9,62 @@
 import UIKit
 
 open class QXActivityIndicatorView: QXView {
-    public var systemView: UIActivityIndicatorView? {
-        didSet {
-            for view in subviews {
-                view.removeFromSuperview()
-            }
-            if let view = systemView {
-                addSubview(view)
-            }
-            qxSetNeedsLayout()
-        }
-    }
+    
+    public private(set) var systemView: UIActivityIndicatorView?
     public func startAnimating() {
         systemView?.startAnimating()
     }
     public func stopAnimating() {
         systemView?.stopAnimating()
     }
-    
-    open var margin: QXEdgeInsets = QXEdgeInsets.zero
-    
-    public init(systemView: UIActivityIndicatorView) {
-        self.systemView = systemView
+        
+    public override init() {
         super.init()
-        addSubview(systemView)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        updateIndicatorView()
+    }
+    @objc func applicationDidBecomeActive() {
+        DispatchQueue.main.qxAsyncWait(0.2) {
+            self.updateIndicatorView()
+        }
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    public func updateIndicatorView() {
+        if #available(iOS 13.0, *) {
+            switch UITraitCollection.current.userInterfaceStyle {
+            case .dark:
+                systemView = UIActivityIndicatorView(style: .white)
+            default:
+                systemView = UIActivityIndicatorView(style: .gray)
+            }
+        } else {
+            systemView = UIActivityIndicatorView(style: .gray)
+        }
+        for view in subviews {
+            view.removeFromSuperview()
+        }
+        if let e = systemView {
+            addSubview(e)
+        }
+        qxSetNeedsLayout()
     }
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    open override var intrinsicContentSize: CGSize {
-        if isDisplay {
-            if let e = intrinsicSize {
-                return e.cgSize
-            } else {
-                if let e = systemView?.intrinsicContentSize {
-                    return CGSize(width: margin.left + e.width + margin.right, height: margin.top + e.height + margin.bottom)
-                } else {
-                    return CGSize.zero
-                }
-            }
-        } else {
-            return CGSize.zero
+    open override func natureContentSize() -> QXSize {
+        if let e = systemView?.intrinsicContentSize {
+            return e.qxSize.sizeByAdd(padding)
         }
+        return QXSize.zero
     }
-    open override func layoutSubviews() {
+
+    override open func layoutSubviews() {
         super.layoutSubviews()
-        systemView?.frame = CGRect(x: margin.left, y: margin.top, width: bounds.width - margin.left - margin.right, height: bounds.height - margin.top - margin.bottom)
-    }    
+        systemView?.qxRect = qxBounds.rectByReduce(padding)
+    }
     
 }

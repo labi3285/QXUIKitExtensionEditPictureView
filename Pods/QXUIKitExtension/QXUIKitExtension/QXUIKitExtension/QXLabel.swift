@@ -16,7 +16,7 @@ open class QXLabel: QXView {
             qxSetNeedsLayout()
         }
     }
-    open var font: QXFont = QXFont(size: 14, color: QXColor.black) {
+    open var font: QXFont = QXFont(14, QXColor.dynamicText) {
         didSet {
             richTexts = nil
             uiLabel.attributedText = font.nsAttributtedString(text)
@@ -65,9 +65,9 @@ open class QXLabel: QXView {
         get { return uiLabel.numberOfLines }
     }
     
-    public lazy var uiLabel: UILabel = {
-        let one = UILabel()
-        return one
+    public final lazy var uiLabel: UILabel = {
+        let e = UILabel()
+        return e
     }()
 
     public override init() {
@@ -75,45 +75,34 @@ open class QXLabel: QXView {
         addSubview(uiLabel)
         isUserInteractionEnabled = false
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public var intrinsicWidth: CGFloat?
-    public var intrinsicMinWidth: CGFloat?
-    public var intrinsicMinHeight: CGFloat?
-    public var intrinsicMaxWidth: CGFloat?
-    public var intrinsicMaxHeight: CGFloat?
-    open override var intrinsicContentSize: CGSize {
-        if isDisplay {
-            var w: CGFloat = 0
-            var h: CGFloat = 0
-            if let e = intrinsicSize {
-                w = e.w
-                h = e.h
-            } else if let e = intrinsicWidth {
-                var size = CGSize(width: e - padding.left - padding.right, height: CGFloat.greatestFiniteMagnitude)
-                size = uiLabel.sizeThatFits(size)
-                w = e
-                h = size.height + padding.top + padding.bottom
-            } else {
-                let size = uiLabel.intrinsicContentSize
-                w = padding.left + size.width + padding.right
-                h = padding.top + size.height + padding.bottom
-            }
-            if let e = intrinsicMinWidth { w = max(e, w) }
-            if let e = intrinsicMaxWidth { w = min(e, w) }
-            if let e = intrinsicMinHeight { h = max(e, h) }
-            if let e = intrinsicMaxHeight { h = min(e, h) }
-            return CGSize(width: w, height: h)
+    open override func natureContentSize() -> QXSize {
+        if let e = fixWidth ?? maxWidth {
+            var size = CGSize(width: e - padding.left - padding.right, height: QXView.extendLength)
+            size = uiLabel.sizeThatFits(size)
+            return size.qxSize.sizeByAdd(padding)
         } else {
-            return CGSize.zero
+            return uiLabel.sizeThatFits(QXView.extendSize.cgSize).qxSize.sizeByAdd(padding)
         }
     }
-    open override func layoutSubviews() {
+    
+    override open func layoutSubviews() {
         super.layoutSubviews()
-        let size = uiLabel.sizeThatFits(CGSize.init(width: bounds.width - padding.left - padding.right, height: CGFloat.greatestFiniteMagnitude))
+        let size = uiLabel.sizeThatFits(CGSize.init(width: bounds.width - padding.left - padding.right, height: QXView.extendLength))
         let h = min(size.height, bounds.height - padding.top - padding.bottom)
+        let w = min(size.width, bounds.width - padding.left - padding.right)
+        let x: CGFloat
+        switch alignmentX {
+        case .left:
+            x = padding.left
+        case .center:
+            x = (bounds.width - padding.left - padding.right - w) / 2 + padding.left
+        case .right:
+            x = bounds.width - padding.right - w
+        }
         let y: CGFloat
         switch alignmentY {
         case .top:
@@ -121,9 +110,51 @@ open class QXLabel: QXView {
         case .center:
             y = (bounds.height - padding.top - padding.bottom - h) / 2 + padding.top
         case .bottom:
-            y = (bounds.height - padding.bottom - h) / 2 + padding.top
+            y = bounds.height - padding.bottom - h
         }
-        uiLabel.frame = CGRect(x: padding.left, y: y, width: bounds.width - padding.left - padding.right, height: h)
+        uiLabel.frame = CGRect(x: x, y: y, width: w, height: h)
+    }
+    
+    //MARK:- COPY
+    public var isCopyEnabled: Bool = false {
+        didSet {
+            if isCopyEnabled {
+                addGestureRecognizer(longGestureRecognizer)
+                isUserInteractionEnabled = true
+            } else {
+                removeGestureRecognizer(longGestureRecognizer)
+                isUserInteractionEnabled = false
+            }
+        }
+    }
+    private final lazy var longGestureRecognizer: UILongPressGestureRecognizer = {
+        let e = UILongPressGestureRecognizer(target: self, action: #selector(longPressed))
+        return e
+    }()
+    @objc func longPressed(_ recognizer: UILongPressGestureRecognizer) {
+        if recognizer.state == .began {
+            self.becomeFirstResponder()
+            let copyMenu = UIMenuItem(title: "复制", action: #selector(copyitem(menuVc:)))
+            let menu = UIMenuController.shared
+            menu.menuItems = [copyMenu]
+            menu.setTargetRect(uiLabel.frame, in: self)
+            menu.arrowDirection = .down
+            menu.update()
+            menu.setMenuVisible(true, animated: true)
+        }
+    }
+    @objc func copyitem(menuVc: UIMenuController) {
+        UIPasteboard.general.string = uiLabel.text ?? ""
+    }
+    override open var canBecomeFirstResponder: Bool {
+        return isCopyEnabled
+    }
+    override open func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action == #selector(copyitem(menuVc:)) && isCopyEnabled {
+           return true
+        }
+        return false
     }
 
 }
+

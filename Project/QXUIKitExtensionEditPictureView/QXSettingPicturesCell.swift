@@ -11,24 +11,25 @@ import QXConsMaker
 
 open class QXSettingPicturesCell: QXSettingCell {
     
-    open override func height(_ model: Any?, _ width: CGFloat) -> CGFloat? {
-        picturesView.applyConfigs(intrinsicWidth: width, xCount: 3, hwRatio: 1/1)
-        return picturesView.intrinsicContentSize.height
+    open override func height(_ model: Any?) -> CGFloat? {
+        picturesView.fixWidth = context.givenWidth
+        return picturesView.natureSize.h
     }
     
-    public lazy var picturesView: QXEditPicturesView = {
-        let one = QXEditPicturesView(9)
-        one.padding = QXEdgeInsets(10, 15, 10, 15)
-        one.respondNeedsLayout = { [weak self] in
-            self?.tableView?.setNeedsUpdate()
+    public final lazy var picturesView: QXEditPicturesView = {
+        let e = QXEditPicturesView(maxPickCount: 9, isAddButtonAtLast: true)
+        e.padding = QXEdgeInsets(10, 15, 10, 15)
+        e.respondNeedsLayout = { [weak self] in
+            self?.context?.tableView?.setNeedsUpdate()
         }
-        return one
+        return e
     }()
     
     required public init() {
         super.init()
         contentView.addSubview(picturesView)
         picturesView.IN(contentView).LEFT.TOP.RIGHT.BOTTOM.MAKE()
+        fixHeight = nil
     }
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

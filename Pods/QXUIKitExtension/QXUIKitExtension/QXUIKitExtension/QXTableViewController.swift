@@ -9,45 +9,54 @@
 import UIKit
 
 open class QXTableViewController<Model>: QXViewController, QXTableViewDelegate {
-
-    public lazy var tableView: QXTableView = {
-        let one = QXTableView()
-        one.delegate = self
-        return one
+    
+    public final lazy var tableView: QXTableView = {
+        let e = QXTableView()
+        e.delegate = self
+        return e
     }()
-    public lazy var loadStatusView: QXLoadStatusView = {
-        let one = QXLoadStatusView()
-        return one
+    public final lazy var loadStatusView: QXLoadStatusView = {
+        let e = QXLoadStatusView()
+        return e
     }()
     
-    public lazy var contentView: QXModelsLoadStatusView<Model> = {
-        let one = QXModelsLoadStatusView<Model>(contentView: self.tableView, loadStatusView: self.loadStatusView)
-         return one
+    public final lazy var contentView: QXModelsLoadStatusView<Model> = {
+        let e = QXModelsLoadStatusView<Model>(contentView: self.tableView, loadStatusView: self.loadStatusView)
+        e.api = { [weak self] filter, done in
+            self?.loadData(filter, done)
+        }
+        return e
     }()
+        
+    open func loadData(_ filter: QXFilter, _ done: @escaping (QXRequest.RespondPage<Model>) -> Void) {
+        done(.failed(QXError(-1, "请重写loadData或者提供api")))
+    }
+    
+    open override func viewDidLayoutSubviews() {
+        contentView.qxRect = view.qxBounds
+        contentView.layoutSubviews()
+        tableView.layoutSubviews()
+        super.viewDidLayoutSubviews()
+    }
     
     override open func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(contentView)
-        contentView.IN(view).LEFT.RIGHT.TOP.BOTTOM.MAKE()
-        
-//        contentView.canPage = true
-//        contentView.canRefresh = true
-//        contentView.api = { ok, failed in
-//             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
-//                 let ms = (0..<5).map { _ in QXDebugRandomText(333) }
-//                 ok(ms, true)
-//             }
-//         }
     }
+    
+    open func tableViewDidSetupCell(_ cell: QXTableViewCell, for model: Any, in section: QXTableViewSection) { }
+    open func tableViewDidSelectCell(_ cell: QXTableViewCell, for model: Any, in section: QXTableViewSection) { }
+    
+    open func tableViewDidSetupHeaderView(_ headerView: QXTableViewHeaderFooterView, for model: Any, in section: QXTableViewSection) { }
+    open func tableViewDidSelectHeaderView(_ headerView: QXTableViewHeaderFooterView, for model: Any, in section: QXTableViewSection) { }
+    
+    open func tableViewDidSetupFooterView(_ footerView: QXTableViewHeaderFooterView, for model: Any, in section: QXTableViewSection) { }
+    open func tableViewDidSelectFooterView(_ footerView: QXTableViewHeaderFooterView, for model: Any, in section: QXTableViewSection) { }
 
-    open func qxTableViewCellClass(_ model: Any?) -> QXTableViewCell.Type? {
-        return nil
-    }
-    open func qxTableViewHeaderFooterViewClass(_ model: Any?) -> QXTableViewHeaderFooterView.Type? {
-        return nil
-    }
-    open func qxTableViewMoveCell(_ indexPath: IndexPath, _ toIndexPath: IndexPath) {
-        
+    open func tableViewDidMove(from: IndexPath, to: IndexPath, in sections: [QXTableViewSection]) { }
+    
+    open func tableViewNeedsReloadData() {
+        contentView.reloadData()
     }
     
 }

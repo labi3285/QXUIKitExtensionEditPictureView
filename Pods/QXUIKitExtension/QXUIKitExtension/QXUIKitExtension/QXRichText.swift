@@ -39,17 +39,26 @@ public enum QXRichText {
         }
     }
     
-    public static func size(_ arr: [QXRichText]?, width: CGFloat) -> CGSize? {
-        return nsAttributedString(arr)?.qxSize(width: width)
+    public var qxImage: QXImage {
+        switch self {
+        case .text(let t, let f):
+            return f.qxImage(t)
+        case .image(let i, let r):
+            return i.setSize(r.w, r.h)
+        }
     }
-    public static func size(_ arr: [QXRichText]?) -> CGSize? {
-        return nsAttributedString(arr)?.qxSize
+    
+    public static func size(_ arr: [QXRichText]?, width: CGFloat) -> QXSize {
+        return nsAttributedString(arr)?.qxSize(width: width).qxSize ?? QXSize.zero
     }
-    public func size(width: CGFloat) -> CGSize? {
-        return nsAttributedString.qxSize(width: width)
+    public static func size(_ arr: [QXRichText]?) -> QXSize {
+        return nsAttributedString(arr)?.qxSize.qxSize ?? QXSize.zero
     }
-    public var size: CGSize {
-        return nsAttributedString.qxSize
+    public func size(width: CGFloat) -> QXSize {
+        return nsAttributedString.qxSize(width: width).qxSize
+    }
+    public var size: QXSize {
+        return nsAttributedString.qxSize.qxSize
     }
     
     public static func nsAttributedString(_ arr: [QXRichText]?) -> NSAttributedString? {
@@ -68,12 +77,12 @@ public enum QXRichText {
 extension NSAttributedString {
     
     public func qxSize(width: CGFloat) -> CGSize {
-        return boundingRect(with: CGSize(width: width, height: CGFloat.greatestFiniteMagnitude),
+        return boundingRect(with: CGSize(width: width, height: QXView.extendLength),
                             options: .usesLineFragmentOrigin,
                             context: nil).size
     }
     public var qxSize: CGSize {
-        return qxSize(width: CGFloat.greatestFiniteMagnitude)
+        return qxSize(width: QXView.extendLength)
     }
     
 }

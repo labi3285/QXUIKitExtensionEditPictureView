@@ -12,30 +12,30 @@ import TZImagePickerController
 
 open class QXSettingTitlePictureCell: QXSettingCell {
 
-    public lazy var titleLabel: QXLabel = {
-        let one = QXLabel()
-        one.numberOfLines = 1
-        one.intrinsicMinHeight = 999
-        one.alignmentY = .top
-        one.padding = QXEdgeInsets(10, 0, 10, 0)
-        one.font = QXFont(fmt: "16 #333333")
-        return one
+    public final lazy var titleLabel: QXLabel = {
+        let e = QXLabel()
+        e.numberOfLines = 1
+        e.minHeight = 999
+        e.alignmentY = .top
+        e.padding = QXEdgeInsets(10, 0, 10, 0)
+        e.font = QXFont(fmt: "16 #333333")
+        return e
     }()
 
-    public lazy var pictureView: QXEditPictureView = {
-        let one = QXEditPictureView()
-        one.intrinsicSize = QXSize(100, 100)
-        return one
+    public final lazy var pictureView: QXEditPictureView = {
+        let e = QXEditPictureView()
+        e.fixSize = QXSize(100, 100)
+        return e
     }()
         
-    public lazy var layoutView: QXStackView = {
-        let one = QXStackView()
-        one.alignmentY = .center
-        one.alignmentX = .left
-        one.viewMargin = 10
-        one.padding = QXEdgeInsets(5, 15, 5, 15)
-        one.setupViews([self.titleLabel, QXFlexView(), self.pictureView])
-        return one
+    public final lazy var layoutView: QXStackView = {
+        let e = QXStackView()
+        e.alignmentY = .center
+        e.alignmentX = .left
+        e.viewMargin = 10
+        e.padding = QXEdgeInsets(5, 15, 5, 15)
+        e.views = [self.titleLabel, QXFlexSpace(), self.pictureView]
+        return e
     }()
     
     required public init() {

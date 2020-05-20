@@ -11,7 +11,7 @@ import Foundation
 extension QXDate {
     
     /// support date formats
-    public enum DateFormats: String {
+    public enum Formats: String {
         
         // standard 24
         case standard24 =           "yyyy-MM-dd HH:mm:ss"
@@ -53,28 +53,40 @@ extension QXDate {
         case nature_english =       "nature @just now @ minutes ago @ minutes later @ hours ago @ hours later @yesterday @tomorrow @the day before yesterday @the day after tomorrow @ days ago @ days later @ weeks ago @ weeks later @ months ago @ months later @ years ago @ years later"
         
         /// get date from formate string
-        public func date(_ dateString: String) -> Date? {
+        public func nsDate(_ dateString: String) -> Date? {
             assert(!self.rawValue.hasPrefix("nature"), "nature string can not transform into date")
             _initFormatter(fmt: self)
-            return DateFormats._formatter.date(from: dateString)
+            return Formats._formatter.date(from: dateString)
         }
         /// get formate string from date
-        public func string(_ date: Date?, _ placeholder: String = "--") -> String {
-            guard let date = date else {
+        public func string(_ nsDate: Date?, _ placeholder: String = "--") -> String {
+            guard let date = nsDate else {
                 return placeholder
             }
             if self.rawValue.hasPrefix("nature") {
                 let components = self.rawValue.components(separatedBy: " @")
-                return DateFormats._getNature(date, components)
+                return Formats._getNature(date, components)
             } else {
                 _initFormatter(fmt: self)
-                return DateFormats._formatter.string(from: date)
+                return Formats._formatter.string(from: date)
             }
         }
         
+        /// get date from formate string
+        public func date(_ dateString: String) -> QXDate? {
+            if let e = nsDate(dateString) {
+                return QXDate(e)
+            }
+            return nil
+        }
+        /// get formate string from date
+        public func string(_ date: QXDate?, _ placeholder: String = "--") -> String {
+            return string(date?.nsDate, placeholder)
+        }
+        
         /// init static formatter
-        private func _initFormatter(fmt: DateFormats) {
-            let formatter = DateFormats._formatter
+        private func _initFormatter(fmt: Formats) {
+            let formatter = Formats._formatter
             let components = fmt.rawValue.components(separatedBy: " @")
             if components.count >= 3 {
                 formatter.dateFormat = components[0]
@@ -87,10 +99,10 @@ extension QXDate {
         
         /// static formatter for use
         private static var _formatter: DateFormatter = {
-            let one = DateFormatter()
-            one.calendar = Calendar(identifier: .gregorian)
-            one.dateFormat = DateFormats.standard24.rawValue
-            return one
+            let e = DateFormatter()
+            e.calendar = Calendar(identifier: .gregorian)
+            e.dateFormat = Formats.standard24.rawValue
+            return e
         }()
         
         /// make nature date string
@@ -199,9 +211,6 @@ public struct QXDate: CustomStringConvertible {
         return Date(timeInterval: TimeInterval(interval), since: date)
     }
     
-    /// 格式化类
-    public static let Formats = DateFormats.self
-    
     // segs
     public let year: Int
     public let month: Int
@@ -210,13 +219,7 @@ public struct QXDate: CustomStringConvertible {
     public let minute: Int
     public let second: Int
     
-    /// judge exist of year, month and day segs, true if any of them is zero
-    public var isTimeMode: Bool {
-        let dateExist = year != 0 && month != 0 && day != 0
-        return !dateExist
-    }
-    
-    public func string(_ fmt: DateFormats, _ placeholder: String = "--") -> String {
+    public func string(_ fmt: Formats, _ placeholder: String = "--") -> String {
         return fmt.string(nsDate, placeholder)
     }
     
@@ -225,7 +228,59 @@ public struct QXDate: CustomStringConvertible {
         if let date = _initNSDate {
             return date
         }
-        return DateFormats.segments.date(segmentFormateString)!
+        return Formats.segments.nsDate(segmentFormateString)!
+    }
+    
+    public static let calendar: Calendar = Calendar(identifier: Calendar.Identifier.gregorian)
+
+    /// day index in a week, 1 - 7
+    public var weekDay: Int {
+        var i = QXDate.calendar.component(.weekday, from: nsDate)
+        if i == 1 {
+            i = 7
+        } else {
+            i -= 1
+        }
+        return i
+    }
+    public var monthDays: Int {
+        if month >= 1 && month <= 12 {
+            return QXDate.calendar.range(of: .day, in: .month, for: nsDate)!.count
+        } else {
+            return 28
+        }
+    }
+
+    public var endpointsOfYear: (start: QXDate, end: QXDate) {
+        return (
+            QXDate(year: year, month: 1, day: 1, hour: 0, minute: 0, second: 0),
+            QXDate(year: year, month: 12, day: 31, hour: 23, minute: 59, second: 59)
+        )
+    }
+    public var endpointsOfMonth: (start: QXDate, end: QXDate) {
+        let days = monthDays
+        return (
+            QXDate(year: year, month: month, day: 1, hour: 0, minute: 0, second: 0),
+            QXDate(year: year, month: month, day: days, hour: 23, minute: 59, second: 59)
+        )
+    }
+    public var endpointsOfDay: (start: QXDate, end: QXDate) {
+        return (
+            QXDate(year: year, month: month, day: day, hour: 0, minute: 0, second: 0),
+            QXDate(year: year, month: month, day: day, hour: 23, minute: 59, second: 59)
+        )
+    }
+    public var endpointsOfWeak: (start: QXDate, end: QXDate) {
+        let now = QXDate(year: year, month: month, day: day, hour: 0, minute: 0, second: 0)
+        let day = weekDay
+        let a = 60 * 60 * 24 * (TimeInterval(day - 1))
+        let b = 60 * 60 * 24 * (7 - TimeInterval(day))
+        let start = QXDate(now.nsDate.addingTimeInterval(-a))
+        let end = QXDate(now.nsDate.addingTimeInterval(b))
+        return (
+            QXDate(year: start.year, month: start.month, day: start.day, hour: 0, minute: 0, second: 0),
+            QXDate(year: end.year, month: end.month, day: end.day, hour: 23, minute: 59, second: 59)
+        )
     }
     
     /// date formate string
@@ -235,20 +290,50 @@ public struct QXDate: CustomStringConvertible {
     
     /// CustomStringConvertible
     public var description: String {
-        return "[QXDate] " + DateFormats.segments.string(nsDate)
+        return "[QXDate] " + Formats.standard24.string(nsDate)
     }
     
-    /// init with year, month and day
     public init(year: Int, month: Int, day: Int) {
         self.init(year: year, month: month, day: day, hour: 0, minute: 0, second: 0)
     }
-    /// init with hour, minute and second
-    public init(hour: Int, minute: Int, second: Int) {
-        self.init(year: 0, month: 0, day: 0, hour: 0, minute: 0, second: 0)
+    public init(year: Int, month: Int) {
+        self.init(year: year, month: month, day: 1, hour: 0, minute: 0, second: 0)
     }
+    public init(month: Int, day: Int) {
+        self.init(year: 1970, month: month, day: day, hour: 0, minute: 0, second: 0)
+    }
+    public init(year: Int) {
+        self.init(year: year, month: 1, day: 1, hour: 0, minute: 0, second: 0)
+    }
+    public init(month: Int) {
+        self.init(year: 1970, month: month, day: 1, hour: 0, minute: 0, second: 0)
+    }
+    public init(day: Int) {
+        self.init(year: 1970, month: 1, day: day, hour: 0, minute: 0, second: 0)
+    }
+    
+    public init(hour: Int, minute: Int, second: Int) {
+        self.init(year: 1970, month: 1, day: 1, hour: hour, minute: minute, second: second)
+    }
+    public init(hour: Int, minute: Int) {
+        self.init(year: 1970, month: 1, day: 1, hour: hour, minute: minute, second: 0)
+    }
+    public init(minute: Int, second: Int) {
+        self.init(year: 1970, month: 1, day: 1, hour: 0, minute: minute, second: second)
+    }
+    public init(hour: Int) {
+        self.init(year: 1970, month: 1, day: 1, hour: hour, minute: 0, second: 0)
+    }
+    public init(minute: Int) {
+        self.init(year: 1970, month: 1, day: 1, hour: 0, minute: minute, second: 0)
+    }
+    public init(second: Int) {
+        self.init(year: 1970, month: 1, day: 1, hour: 0, minute: 0, second: second)
+    }
+    
     /// init with Date
     public init(_ nsDate: Date) {
-        let dateStr = DateFormats.segments.string(nsDate)
+        let dateStr = Formats.segments.string(nsDate)
         let segStrs = dateStr.components(separatedBy: " ")
         assert(segStrs.count >= 6)
         self.init(year:     (segStrs[0] as NSString).integerValue,
@@ -275,3 +360,20 @@ public struct QXDate: CustomStringConvertible {
 }
 
 
+extension QXDate: Comparable, Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.nsDate.timeIntervalSince1970 == rhs.nsDate.timeIntervalSince1970
+    }
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        return lhs.nsDate.timeIntervalSince1970 < rhs.nsDate.timeIntervalSince1970
+    }
+    public static func <= (lhs: Self, rhs: Self) -> Bool {
+        return lhs.nsDate.timeIntervalSince1970 <= rhs.nsDate.timeIntervalSince1970
+    }
+    public static func >= (lhs: Self, rhs: Self) -> Bool {
+        return lhs.nsDate.timeIntervalSince1970 >= rhs.nsDate.timeIntervalSince1970
+    }
+    public static func > (lhs: Self, rhs: Self) -> Bool {
+        return lhs.nsDate.timeIntervalSince1970 > rhs.nsDate.timeIntervalSince1970
+    }
+}

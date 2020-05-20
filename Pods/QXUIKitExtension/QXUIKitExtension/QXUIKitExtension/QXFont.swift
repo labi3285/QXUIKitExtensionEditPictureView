@@ -10,6 +10,13 @@ import UIKit
 
 open class QXFont {
     
+    public struct Name {
+        
+        /// 数字等宽字体
+        public static let HelveticaNeue = "Helvetica Neue"
+    }
+
+        
     /// 字体大小
     open var size: CGFloat
     /// 字体颜色
@@ -137,12 +144,15 @@ open class QXFont {
         self.bold = false
     }
     
-    public init(size: CGFloat, color: QXColor) {
+    public convenience init(_ size: CGFloat, _ color: QXColor) {
+        self.init(size, color, bold: false)
+    }
+    public init(_ size: CGFloat, _ color: QXColor, bold: Bool) {
         self.size = size
         self.color = color
-        self.bold = false
+        self.bold = bold
     }
-    
+
     public init(_ size: CGFloat, _ fmtHex: String, _ bold: Bool) {
         self.size = size
         self.color = QXColor.fmtHex(fmtHex)
@@ -156,9 +166,13 @@ open class QXFont {
         self.bold = false
     }
     
-    open var uiFont: UIFont? {
+    open var uiFont: UIFont {
         if let fontName = fontName {
-            return UIFont(name: fontName, size: size)
+            if let e = UIFont(name: fontName, size: size) {
+                return e
+            } else {
+                return QXDebugFatalError("invalid font", UIFont.systemFont(ofSize: size))
+            }
         } else {
             if bold {
                 return UIFont.boldSystemFont(ofSize: size)
@@ -207,6 +221,12 @@ open class QXFont {
         return dic
     }
     
+    open func qxImage(_ text: String) -> QXImage {
+        let image = UIImage.qxCreate(text: text, font: uiFont, color: color.uiColor, ext: nsAttributtes)
+        let size = image.qxSize.sizeByScale(1/UIScreen.main.scale)
+        return QXImage(image).setSize(size)
+    }
+        
 }
 
 extension UILabel {
@@ -298,3 +318,14 @@ extension UIButton {
     
 }
 
+extension UIFont {
+    
+    public func qxFont(_ color: QXColor) -> QXFont {
+        return QXFont(qxSize, color)
+    }
+    
+    public var qxSize: CGFloat {
+        return fontDescriptor.object(forKey: .size) as? CGFloat ?? 0
+    }
+    
+}

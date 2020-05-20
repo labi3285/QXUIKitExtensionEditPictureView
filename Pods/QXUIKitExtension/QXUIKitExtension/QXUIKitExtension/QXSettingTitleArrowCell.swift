@@ -11,69 +11,208 @@ import QXConsMaker
 
 open class QXSettingTitleArrowCell: QXSettingCell {
         
-
-    open override func height(_ model: Any?, _ width: CGFloat) -> CGFloat? {
-        let h = super.height(model, width)
+    open override var isEnabled: Bool {
+        didSet {
+            super.isEnabled = isEnabled
+            backButton.isDisplay = isEnabled
+        }
+    }
+    open override func height(_ model: Any?) -> CGFloat? {
+        let h = super.height(model)
         if let e = h {
-            arrowView.intrinsicHeight = e - layoutView.padding.top - layoutView.padding.bottom
+            arrowView.fixHeight = e - layoutView.padding.top - layoutView.padding.bottom
         }
         return h
     }
+
+    public var placeHolderFont: QXFont = QXFont(16, QXColor.dynamicPlaceHolder)
+    public var placeHolder: String? {
+        didSet {
+            if richContent == nil && QXEmpty(content) {
+                if _originFont == nil {
+                    _originFont = subTitleLabel.font
+                }
+                subTitleLabel.font = placeHolderFont
+                subTitleLabel.text = placeHolder ?? ""
+            }
+        }
+    }
+    public var content: String? {
+        didSet {
+            if !QXEmpty(content) {
+                if let e = _originFont {
+                    subTitleLabel.font = e
+                }
+                subTitleLabel.text = content ?? ""
+            } else {
+                if _originFont == nil {
+                    _originFont = subTitleLabel.font
+                }
+                subTitleLabel.font = placeHolderFont
+                subTitleLabel.text = placeHolder ?? ""
+            }
+        }
+    }
+    public var richContents: [QXRichText]? {
+        didSet {
+            if let e = richContents {
+                subTitleLabel.richTexts = e
+            } else {
+                if _originFont == nil {
+                    _originFont = subTitleLabel.font
+                }
+                subTitleLabel.font = placeHolderFont
+                subTitleLabel.text = placeHolder ?? ""
+            }
+        }
+    }
     
-    public lazy var titleLabel: QXLabel = {
-        let one = QXLabel()
-        one.numberOfLines = 1
-        one.font = QXFont(fmt: "16 #333333")
-        return one
+    public var richContent: QXRichText? {
+        didSet {
+            if let e = richContent {
+                richContents = [e]
+            } else {
+                if _originFont == nil {
+                    _originFont = subTitleLabel.font
+                }
+                subTitleLabel.font = placeHolderFont
+                subTitleLabel.text = placeHolder ?? ""
+            }
+        }
+    }
+    private var _originFont: QXFont!
+    
+    public final lazy var titleLabel: QXLabel = {
+        let e = QXLabel()
+        e.numberOfLines = 1
+        e.font = QXFont(16, QXColor.dynamicTitle)
+        return e
     }()
-    public lazy var subTitleLabel: QXLabel = {
-        let one = QXLabel()
-        one.numberOfLines = 1
-        one.font = QXFont(fmt: "14 #666666")
-        return one
+    public final lazy var subTitleLabel: QXLabel = {
+        let e = QXLabel()
+        e.numberOfLines = 1
+        e.font = QXFont(14, QXColor.dynamicSubTitle)
+        e.compressResistanceX = QXView.resistanceEasyDeform
+        return e
     }()
-    public lazy var arrowView: QXImageView = {
-        let one = QXImageView()
-        one.qxTintColor = QXColor.hex("#666666", 1)
-        one.image = QXUIKitExtensionResources.shared.image("icon_arrow.png")        .setRenderingMode(.alwaysTemplate)
-        one.respondUpdateImage = { [weak self] in
+    public final lazy var arrowView: QXImageView = {
+        let e = QXImageView()
+        e.qxTintColor = QXColor.dynamicIndicator
+        e.image = QXUIKitExtensionResources.shared.image("icon_arrow.png")
+            .setRenderingMode(.alwaysTemplate)
+        e.compressResistance = QXView.resistanceStable
+        e.respondUpdateImage = { [weak self] in
             self?.layoutView.setNeedsLayout()
         }
-        return one
+        return e
     }()
-    public lazy var layoutView: QXStackView = {
-        let one = QXStackView()
-        one.alignmentY = .center
-        one.alignmentX = .left
-        one.viewMargin = 10
-        one.padding = QXEdgeInsets(5, 10, 5, 15)
-        one.setupViews([self.titleLabel, QXFlexView(), self.subTitleLabel, self.arrowView], collapseOrder: [0, 2, 1, 3])
-        return one
+    public final lazy var layoutView: QXStackView = {
+        let e = QXStackView()
+        e.alignmentY = .center
+        e.alignmentX = .left
+        e.viewMargin = 10
+        e.padding = QXEdgeInsets(5, 10, 5, 15)
+        e.views = [self.titleLabel, QXFlexSpace(), self.subTitleLabel, self.arrowView]
+        return e
     }()
-    
-    public lazy var backButton: QXButton = {
-        let one = QXButton()
-        one.backView.backgroundColorHighlighted = QXColor.higlightGray
-        return one
-    }()
-    
-    required public init() {
+        
+    public required init() {
         super.init()
-        contentView.addSubview(backButton)
         contentView.addSubview(layoutView)
         layoutView.IN(contentView).LEFT.TOP.RIGHT.BOTTOM.MAKE()
+        backButton.isDisplay = true
         fixHeight = 50
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required public init(_ reuseId: String) {
+    public required init(_ reuseId: String) {
         fatalError("init(_:) has not been implemented")
     }
     
-    open override func layoutSubviews() {
-        super.layoutSubviews()
-        backButton.frame = contentView.bounds
+}
+
+open class QXTitleArrow {
+    public var title: String?
+    public var richTitle: [QXRichText]?
+    public var subTitle: String?
+    public var richSubTitle: [QXRichText]?
+    public var todo: (() -> ())?
+    public init(_ title: String) {
+        self.title = title
     }
+}
+
+open class QXTitleArrowCell: QXTableViewBreakLineCell {
+        
+    open override class func height(_ model: Any?, _ context: QXTableViewCell.Context) -> CGFloat? {
+        return 50
+    }
+    
+    open override var model: Any? {
+        didSet {
+            if let e = model as? QXTitleArrow {
+                if let e = e.richTitle {
+                    titleLabel.richTexts = e
+                } else {
+                    titleLabel.text = e.title ?? ""
+                }
+                if let e = e.richSubTitle {
+                    subTitleLabel.richTexts = e
+                } else {
+                    subTitleLabel.text = e.subTitle ?? ""
+                }
+            }
+        }
+    }
+    
+    public final lazy var titleLabel: QXLabel = {
+        let e = QXLabel()
+        e.numberOfLines = 1
+        e.font = QXFont(16, QXColor.dynamicTitle)
+        return e
+    }()
+    public final lazy var subTitleLabel: QXLabel = {
+        let e = QXLabel()
+        e.numberOfLines = 1
+        e.font = QXFont(14, QXColor.dynamicSubTitle)
+        e.compressResistanceX = QXView.resistanceEasyDeform
+        return e
+    }()
+    public final lazy var arrowView: QXImageView = {
+        let e = QXImageView()
+        e.qxTintColor = QXColor.dynamicIndicator
+        e.image = QXUIKitExtensionResources.shared.image("icon_arrow.png")
+            .setRenderingMode(.alwaysTemplate)
+        e.compressResistance = QXView.resistanceStable
+        e.respondUpdateImage = { [weak self] in
+            self?.layoutView.setNeedsLayout()
+        }
+        return e
+    }()
+    public final lazy var layoutView: QXStackView = {
+        let e = QXStackView()
+        e.alignmentY = .center
+        e.alignmentX = .left
+        e.viewMargin = 10
+        e.padding = QXEdgeInsets(5, 10, 5, 15)
+        e.views = [self.titleLabel, QXFlexSpace(), self.subTitleLabel, self.arrowView]
+        return e
+    }()
+        
+    public required init(_ reuseId: String) {
+        super.init(reuseId)
+        contentView.qxBackgroundColor = QXColor.dynamicBody
+        contentView.addSubview(layoutView)
+        layoutView.IN(contentView).LEFT.TOP.RIGHT.BOTTOM.MAKE()
+        backButton.respondClick = { [weak self] in
+            (self?.model as? QXTitleArrow)?.todo?()
+            self?.didClickCell()
+        }
+    }
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     
 }
