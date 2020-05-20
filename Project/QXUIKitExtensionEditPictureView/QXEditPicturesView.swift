@@ -12,7 +12,7 @@ import QXConsMaker
 
 open class QXEditPicturesView: QXArrangeView {
     
-    public var isEnableGif: Bool = true
+    public var isEnableGif: Bool = false
 
     public var respondChange: ((_ images: [QXImage]) -> ())?
 
@@ -94,11 +94,10 @@ open class QXEditPicturesView: QXArrangeView {
         let e = QXImageButton()
         e.fixSize = QXSize(100, 100)
         e.imageView.contentMode = .scaleAspectFill
-        e.imageView.placeHolderImage = QXUIKitExtensionResources.shared.image("icon_add_pic")
+        e.image = QXUIKitExtensionResources.shared.image("icon_add_pic")
         e.respondClick = { [weak self] in
             if let s = self {
                 let c = s.maxPickCount - s.pictures.count
-                s._lastPictures = s.pictures
                 if let vc = TZImagePickerController(maxImagesCount: c, delegate: self) {
                     vc.allowPickingGif = s.isEnableGif
                     vc.showSelectedIndex = true
@@ -116,7 +115,6 @@ open class QXEditPicturesView: QXArrangeView {
         }
         return e
     }()
-    private var _lastPictures: [QXImage] = []
     
     public required init(maxPickCount: Int, isAddButtonAtLast: Bool) {
         self.maxPickCount = maxPickCount
@@ -145,11 +143,7 @@ extension QXEditPicturesView: TZImagePickerControllerDelegate {
             }
             arr.append(image)
         }
-        if isAddButtonAtLast {
-            self.pictures = _lastPictures + arr
-        } else {
-            self.pictures = arr + _lastPictures 
-        }
+        self.pictures = arr
         qxSetNeedsLayout()
         //respondChangeSize?()
         respondChange?(pictures)
@@ -162,7 +156,11 @@ extension QXEditPicturesView: TZImagePickerControllerDelegate {
         if let asset = asset {
            image.setPHAsset(asset)
         }
-        self.pictures = _lastPictures + [image]
+        if (isAddButtonAtLast) {
+            self.pictures = self.pictures + [image]
+        } else {
+            self.pictures = [image] + self.pictures
+        }
         qxSetNeedsLayout()
         //tableView?.setNeedsUpdate()
         respondChange?(pictures)
