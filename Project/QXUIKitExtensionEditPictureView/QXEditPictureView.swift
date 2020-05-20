@@ -43,7 +43,7 @@ open class QXEditPictureView: QXImageButton {
         super.init()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.placeHolderImage = QXUIKitExtensionResources.shared.image("icon_add_pic")
+        imageView.image = QXUIKitExtensionResources.shared.image("icon_add_pic")
         respondClick = { [weak self] in
              if let s = self {
                  if let vc = TZImagePickerController(maxImagesCount: 1, delegate: self) {

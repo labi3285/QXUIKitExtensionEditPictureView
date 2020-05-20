@@ -19,6 +19,18 @@ open class QXEditPicturesView: QXArrangeView {
     public let maxPickCount: Int
     
     public let isAddButtonAtLast: Bool
+    
+    open var itemSize: QXSize {
+        set {
+            for e in pictureViews {
+                e.fixSize = newValue
+            }
+            addView.fixSize = newValue
+        }
+        get {
+            return addView.fixSize ?? QXSize.zero
+        }
+    }
         
     public var pictures: [QXImage] {
         set {
@@ -36,14 +48,14 @@ open class QXEditPicturesView: QXArrangeView {
             qxSetNeedsLayout()
         }
         get {
-            return pictureViews.compactMap { $0.image }
+            return pictureViews.compactMap { $0.isDisplay ? $0.image : nil }
         }
     }
         
     public lazy var closeButtons: [QXImageButton] = {
         return (0..<self.maxPickCount).map { (i) -> QXImageButton in
             let e = QXImageButton()
-            e.padding = QXEdgeInsets(5, 5, 5, 5)
+            e.padding = QXEdgeInsets(3, 3, 7, 7)
             e.fixSize = QXSize(30, 30)
             e.image = QXUIKitExtensionResources.shared.image("icon_close_red")
             e.respondClick = { [weak self] in
@@ -64,7 +76,7 @@ open class QXEditPicturesView: QXArrangeView {
             e.imageView.contentMode = .scaleAspectFill
             e.clipsToBounds = true
             e.tag = i
-            e.fixSize = QXSize(100, 100)
+            e.fixSize = QXSize(90, 90)
             e.isDisplay = false
             e.respondClick = { [weak self] in
                 if let s = self {
@@ -78,7 +90,7 @@ open class QXEditPicturesView: QXArrangeView {
                             b.add(e)
                         }
                     }
-                    if let vc = TZImagePickerController.init(selectedAssets: b, selectedPhotos: a, index: i) {
+                    if let vc = TZImagePickerController(selectedAssets: b, selectedPhotos: a, index: i) {
                         vc.allowPickingGif = s.isEnableGif
                         vc.allowPickingVideo = false
                         s.uiViewController?.present(vc, animated: true, completion: nil)
@@ -92,15 +104,15 @@ open class QXEditPicturesView: QXArrangeView {
     }()
     public lazy var addView: QXImageButton = {
         let e = QXImageButton()
-        e.fixSize = QXSize(100, 100)
+        e.fixSize = QXSize(90, 90)
         e.imageView.contentMode = .scaleAspectFill
         e.image = QXUIKitExtensionResources.shared.image("icon_add_pic")
         e.respondClick = { [weak self] in
             if let s = self {
-                let c = s.maxPickCount - s.pictures.count
-                if let vc = TZImagePickerController(maxImagesCount: c, delegate: self) {
+                if let vc = TZImagePickerController(maxImagesCount: s.maxPickCount, delegate: self) {
                     vc.allowPickingGif = s.isEnableGif
                     vc.showSelectedIndex = true
+                    vc.alwaysEnableDoneBtn = true
                     vc.allowPickingVideo = false
                     let b = NSMutableArray()
                     for e in s.pictures {

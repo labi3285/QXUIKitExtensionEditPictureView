@@ -24,7 +24,7 @@ open class QXSettingTitlePictureCell: QXSettingCell {
 
     public final lazy var pictureView: QXEditPictureView = {
         let e = QXEditPictureView()
-        e.fixSize = QXSize(100, 100)
+        e.fixSize = QXSize(90, 90)
         return e
     }()
         
