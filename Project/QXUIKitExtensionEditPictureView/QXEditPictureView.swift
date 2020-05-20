@@ -41,7 +41,8 @@ open class QXEditPictureView: QXImageButton {
     
     public override init() {
         super.init()
-        imageView.contentMode = .scaleToFill
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
         imageView.placeHolderImage = QXUIKitExtensionResources.shared.image("icon_add_pic")
         respondClick = { [weak self] in
              if let s = self {
