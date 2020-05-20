@@ -81,7 +81,7 @@ open class QXEditPicturesView: QXArrangeView {
                     if let vc = TZImagePickerController.init(selectedAssets: b, selectedPhotos: a, index: i) {
                         vc.allowPickingGif = s.isEnableGif
                         vc.allowPickingVideo = false
-                        s.qxViewController?.present(vc, animated: true, completion: nil)
+                        s.uiViewController?.present(vc, animated: true, completion: nil)
                     }
                 }
             }
@@ -102,7 +102,7 @@ open class QXEditPicturesView: QXArrangeView {
                 if let vc = TZImagePickerController(maxImagesCount: c, delegate: self) {
                     vc.allowPickingGif = s.isEnableGif
                     vc.allowPickingVideo = false
-                    s.qxViewController?.present(vc, animated: true, completion: nil)
+                    s.uiViewController?.present(vc, animated: true, completion: nil)
                 }
             }
         }

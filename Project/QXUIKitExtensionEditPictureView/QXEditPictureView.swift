@@ -51,7 +51,7 @@ open class QXEditPictureView: QXImageButton {
                      vc.allowCrop = s.isEnableEdit
                      //vc.cropRect = CGRect(x: 0, y: 0, width: s.editSize.w, height: s.editSize.h)
                      vc.allowPickingVideo = false
-                     self?.qxViewController?.present(vc, animated: true, completion: nil)
+                     self?.uiViewController?.present(vc, animated: true, completion: nil)
                  }
              }
          }
