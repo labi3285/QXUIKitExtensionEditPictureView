@@ -101,7 +101,15 @@ open class QXEditPicturesView: QXArrangeView {
                 s._lastPictures = s.pictures
                 if let vc = TZImagePickerController(maxImagesCount: c, delegate: self) {
                     vc.allowPickingGif = s.isEnableGif
+                    vc.showSelectedIndex = true
                     vc.allowPickingVideo = false
+                    let b = NSMutableArray()
+                    for e in s.pictures {
+                        if let e = e.phAsset {
+                            b.add(e)
+                        }
+                    }
+                    vc.selectedAssets = b
                     s.uiViewController?.present(vc, animated: true, completion: nil)
                 }
             }
