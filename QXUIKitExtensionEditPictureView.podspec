@@ -19,6 +19,7 @@ s.resources = "Project/QXUIKitExtensionEditPictureView/QXUIKitExtensionEditPictu
 s.requires_arc = true
 
 s.dependency 'QXUIKitExtension'
+s.dependency 'QXUIKitExtensionPictureView'
 s.dependency 'TZImagePickerController' , '~> 3.3.1'
 
 # pod trunk push QXUIKitExtensionEditPictureView.podspec --allow-warnings

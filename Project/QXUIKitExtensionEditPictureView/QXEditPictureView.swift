@@ -7,10 +7,11 @@
 //
 
 import QXUIKitExtension
+import QXUIKitExtensionPictureView
 import TZImagePickerController
 import QXConsMaker
 
-open class QXEditPictureView: QXImageButton {
+open class QXEditPictureView: QXPictureView {
             
     public var isGifEnabled: Bool = false
     
@@ -20,7 +21,8 @@ open class QXEditPictureView: QXImageButton {
     open override var image: QXImage? {
         didSet {
             super.image = image
-            closeButton.isHidden = image != nil
+            closeButton.isHidden = image == nil
+            addView.isHidden = image != nil
             qxSetNeedsLayout()
         }
     }
@@ -40,19 +42,19 @@ open class QXEditPictureView: QXImageButton {
         return e
     }()
     
-    public override init() {
-        super.init()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.placeHolderImage = QXUIKitExtensionEditPictureViewResources.shared.image("icon_add_pic")
-        respondClick = { [weak self] in
+    lazy var addView: QXImageButton = {
+        let e = QXImageButton()
+        e.imageView.contentMode = .scaleAspectFill
+        e.imageView.placeHolderImage = QXUIKitExtensionEditPictureViewResources.shared.image("icon_add_pic")
+        e.imageView.clipsToBounds = true
+        e.respondClick = { [weak self] in
             if let s = self {
                 if let vc = TZImagePickerController(maxImagesCount: 1, delegate: self) {
                     vc.allowPickingGif = s.isGifEnabled
                     vc.allowCrop = s.isEditEnabled
                     vc.allowPickingVideo = false
                     s.uiViewController?.present(vc, animated: true, completion: nil)
-                    if s.isEnabled {
+                    if s.isEditEnabled {
                         let x = (vc.view.frame.width - s.editSize.w) / 2
                         let y = (vc.view.frame.height - s.editSize.h) / 2
                         vc.cropRect = CGRect(x: x, y: y, width: s.editSize.w, height: s.editSize.h)
@@ -60,13 +62,21 @@ open class QXEditPictureView: QXImageButton {
                 }
             }
         }
+        return e
+    }()
+    
+    public override init() {
+        super.init()
+        contentMode = .scaleAspectFill
+        uiImageView.clipsToBounds = true
+        addSubview(addView)
+        addView.IN(self).LEFT.RIGHT.TOP.BOTTOM.MAKE()
         addSubview(closeButton)
         closeButton.IN(self).RIGHT.TOP.MAKE()
     }
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
 }
 
 extension QXEditPictureView: TZImagePickerControllerDelegate {
@@ -89,7 +99,6 @@ extension QXEditPictureView: TZImagePickerControllerDelegate {
                 image.setPHAsset(asset)
             }
             self.image = image
-            closeButton.isHidden = false
             respondChange?(image)
         }
     }
@@ -104,7 +113,6 @@ extension QXEditPictureView: TZImagePickerControllerDelegate {
             image.setPHAsset(asset)
         }
         self.image = image
-        closeButton.isHidden = false
         respondChange?(image)
     }
     

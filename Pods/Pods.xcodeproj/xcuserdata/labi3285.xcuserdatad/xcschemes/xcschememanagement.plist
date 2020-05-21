@@ -11,70 +11,70 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
-		<key>DSImageBrowse.xcscheme</key>
+		<key>HandyJSON.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
-		<key>HandyJSON.xcscheme</key>
+		<key>JQCollectionViewAlignLayout.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>2</integer>
 		</dict>
-		<key>IQKeyboardManagerSwift.xcscheme</key>
+		<key>MJRefresh.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>3</integer>
 		</dict>
-		<key>JQCollectionViewAlignLayout.xcscheme</key>
+		<key>Pods-Project.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>4</integer>
 		</dict>
-		<key>MJRefresh.xcscheme</key>
+		<key>QXConsMaker.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>5</integer>
 		</dict>
-		<key>Pods-Project.xcscheme</key>
+		<key>QXDSImageBrowse.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>6</integer>
 		</dict>
-		<key>QXConsMaker.xcscheme</key>
+		<key>QXJSON.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>7</integer>
 		</dict>
-		<key>QXJSON.xcscheme</key>
+		<key>QXMessageView.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>8</integer>
 		</dict>
-		<key>QXMessageView.xcscheme</key>
+		<key>QXUIKitExtension.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>9</integer>
 		</dict>
-		<key>QXUIKitExtension.xcscheme</key>
+		<key>QXUIKitExtensionPictureView.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>

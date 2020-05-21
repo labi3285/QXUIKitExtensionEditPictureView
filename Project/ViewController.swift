@@ -19,6 +19,10 @@ class ViewController: QXTableViewController<Any> {
     }()
     lazy var picturesCell: QXSettingPicturesCell = {
         let e = QXSettingPicturesCell()
+//        let i = QXImage(url: "http://a0.att.hudong.com/27/10/01300000324235124757108108752.jpg")
+        
+        let i = QXImage("close")
+        e.picturesView.pictures = [i]
 //        e.picturesView.addView.image = QXImage("close")
 //        for e in e.picturesView.closeButtons {
 //            e.image = QXImage("close")

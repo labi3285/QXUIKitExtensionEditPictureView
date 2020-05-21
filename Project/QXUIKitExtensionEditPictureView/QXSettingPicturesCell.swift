@@ -17,7 +17,7 @@ open class QXSettingPicturesCell: QXSettingCell {
     }
     
     public final lazy var picturesView: QXEditPicturesView = {
-        let e = QXEditPicturesView(maxPickCount: 9, isAddButtonAtLast: true)
+        let e = QXEditPicturesView(maxPickCount: self.maxPickCount, isAddButtonAtLast: self.isAddButtonAtLast)
         e.padding = QXEdgeInsets(10, 15, 10, 15)
         e.respondNeedsLayout = { [weak self] in
             self?.context?.tableView?.setNeedsUpdate()
@@ -25,7 +25,20 @@ open class QXSettingPicturesCell: QXSettingCell {
         return e
     }()
     
+    public let maxPickCount: Int
+    public let isAddButtonAtLast: Bool
+
     required public init() {
+        self.maxPickCount = 9
+        self.isAddButtonAtLast = true
+        super.init()
+        contentView.addSubview(picturesView)
+        picturesView.IN(contentView).LEFT.TOP.RIGHT.BOTTOM.MAKE()
+        fixHeight = nil
+    }
+    required public init(maxPickCount: Int, isAddButtonAtLast: Bool) {
+        self.maxPickCount = maxPickCount
+        self.isAddButtonAtLast = isAddButtonAtLast
         super.init()
         contentView.addSubview(picturesView)
         picturesView.IN(contentView).LEFT.TOP.RIGHT.BOTTOM.MAKE()
