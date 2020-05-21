@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
 s.swift_versions = "5.0"
 
 s.name         = "QXUIKitExtensionEditPictureView"
-s.version      = "0.0.6"
+s.version      = "0.0.7"
 s.summary      = "QXEditPictrueView UIs base on QXUIKitExtension & TZImagePickerController swift5."
 s.description  = <<-DESC
 UIKit extensions in swift. Just enjoy!
@@ -19,7 +19,7 @@ s.resources = "Project/QXUIKitExtensionEditPictureView/QXUIKitExtensionEditPictu
 s.requires_arc = true
 
 s.dependency 'QXUIKitExtension'
-s.dependency 'TZImagePickerController' , '~> 3.2.6'
+s.dependency 'TZImagePickerController' , '~> 3.3.1'
 
 # pod trunk push QXUIKitExtensionEditPictureView.podspec --allow-warnings
 
