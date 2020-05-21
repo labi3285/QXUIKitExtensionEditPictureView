@@ -15,7 +15,7 @@ s.platform     = :ios, "8.0"
 s.source       = { :git => "https://github.com/labi3285/QXUIKitExtensionEditPictureView.git", :tag => "#{s.version}" }
 s.source_files = "Project/QXUIKitExtensionEditPictureView/*"
 
-# s.resources = "Project/XXX/XXXResources.bundle"
+s.resources = "Project/QXUIKitExtensionEditPictureView/QXUIKitExtensionEditPictureViewResources.bundle"
 s.requires_arc = true
 
 s.dependency 'QXUIKitExtension'

@@ -6,18 +6,18 @@
 //  Copyright © 2019 labi3285_lab. All rights reserved.
 //
 
-import Foundation
+import QXUIKitExtension
 
-public class QXUIKitExtensionResources {
+public class QXUIKitExtensionEditPictureViewResources {
     
-    public static let shared: QXUIKitExtensionResources = QXUIKitExtensionResources()
+    public static let shared: QXUIKitExtensionEditPictureViewResources = QXUIKitExtensionEditPictureViewResources()
     
     public var bundle: Bundle {
         if let e = _bundle {
             return e
         }
-        let bundle = Bundle(for: QXUIKitExtensionResources.self)
-        if let path = bundle.path(forResource: "QXUIKitExtensionResources.bundle", ofType: nil) {
+        let bundle = Bundle(for: QXUIKitExtensionEditPictureViewResources.self)
+        if let path = bundle.path(forResource: "QXUIKitExtensionEditPictureViewResources.bundle", ofType: nil) {
             if let e = Bundle(path: path) {
                 _bundle = e
                 return e
@@ -40,7 +40,7 @@ public class QXUIKitExtensionResources {
     
 }
 
-extension QXUIKitExtensionResources {
+extension QXUIKitExtensionEditPictureViewResources {
     
     /**
      * 获取资源路径

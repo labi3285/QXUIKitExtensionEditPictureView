@@ -18,7 +18,7 @@ open class QXSettingTitlePictureCell: QXSettingCell {
         e.minHeight = 999
         e.alignmentY = .top
         e.padding = QXEdgeInsets(10, 0, 10, 0)
-        e.font = QXFont(fmt: "16 #333333")
+        e.font = QXFont(16, QXColor.dynamicTitle)
         return e
     }()
 

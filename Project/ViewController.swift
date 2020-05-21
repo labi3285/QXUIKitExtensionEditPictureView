@@ -14,10 +14,15 @@ class ViewController: QXTableViewController<Any> {
     lazy var pictureCell: QXSettingTitlePictureCell = {
         let e = QXSettingTitlePictureCell()
         e.titleLabel.text = "选择图片"
+//        e.pictureView.closeButton.image = QXImage("close")
         return e
     }()
     lazy var picturesCell: QXSettingPicturesCell = {
         let e = QXSettingPicturesCell()
+//        e.picturesView.addView.image = QXImage("close")
+//        for e in e.picturesView.closeButtons {
+//            e.image = QXImage("close")
+//        }
         return e
     }()
    

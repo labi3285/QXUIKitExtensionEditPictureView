@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		2E4A7BE5C83B46818A7B18A0 /* Pods_Project.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 439112FDE324BCEBF495A516 /* Pods_Project.framework */; };
 		75887877238E501400AA0EF6 /* QXEditPicturesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75887876238E501400AA0EF6 /* QXEditPicturesView.swift */; };
+		75A20BB724760D2C00E87239 /* QXUIKitExtensionEditPictureViewResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 75A20BB624760D2C00E87239 /* QXUIKitExtensionEditPictureViewResources.bundle */; };
+		75A20BB924760DAC00E87239 /* QXUIKitExtensionEditPictureViewResources.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A20BB824760DAC00E87239 /* QXUIKitExtensionEditPictureViewResources.swift */; };
+		75A20BBB24760E2100E87239 /* close.png in Resources */ = {isa = PBXBuildFile; fileRef = 75A20BBA24760E2100E87239 /* close.png */; };
 		75BB3DC4236BD5BC0065ADE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BB3DC3236BD5BC0065ADE5 /* AppDelegate.swift */; };
 		75BB3DC8236BD5BC0065ADE5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BB3DC7236BD5BC0065ADE5 /* ViewController.swift */; };
 		75BB3DCD236BD5BD0065ADE5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75BB3DCC236BD5BD0065ADE5 /* Assets.xcassets */; };
@@ -23,6 +26,9 @@
 		383A7ED99BC508703E60908F /* Pods-Project.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Project.debug.xcconfig"; path = "Target Support Files/Pods-Project/Pods-Project.debug.xcconfig"; sourceTree = "<group>"; };
 		439112FDE324BCEBF495A516 /* Pods_Project.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Project.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		75887876238E501400AA0EF6 /* QXEditPicturesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QXEditPicturesView.swift; sourceTree = "<group>"; };
+		75A20BB624760D2C00E87239 /* QXUIKitExtensionEditPictureViewResources.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = QXUIKitExtensionEditPictureViewResources.bundle; sourceTree = "<group>"; };
+		75A20BB824760DAC00E87239 /* QXUIKitExtensionEditPictureViewResources.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QXUIKitExtensionEditPictureViewResources.swift; sourceTree = "<group>"; };
+		75A20BBA24760E2100E87239 /* close.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = close.png; sourceTree = "<group>"; };
 		75BB3DC0236BD5BC0065ADE5 /* Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Project.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75BB3DC3236BD5BC0065ADE5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		75BB3DC7236BD5BC0065ADE5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -69,6 +75,7 @@
 			children = (
 				75BB3DC3236BD5BC0065ADE5 /* AppDelegate.swift */,
 				75BB3DC7236BD5BC0065ADE5 /* ViewController.swift */,
+				75A20BBA24760E2100E87239 /* close.png */,
 				75BB3DD7236BDA7B0065ADE5 /* QXUIKitExtensionEditPictureView */,
 				75BB3DCC236BD5BD0065ADE5 /* Assets.xcassets */,
 				75BB3DCE236BD5BD0065ADE5 /* LaunchScreen.storyboard */,
@@ -84,6 +91,8 @@
 				75887876238E501400AA0EF6 /* QXEditPicturesView.swift */,
 				75BB3DD8236BDA890065ADE5 /* QXSettingPicturesCell.swift */,
 				75BB3DDA236BDA890065ADE5 /* QXSettingTitlePictureCell.swift */,
+				75A20BB824760DAC00E87239 /* QXUIKitExtensionEditPictureViewResources.swift */,
+				75A20BB624760D2C00E87239 /* QXUIKitExtensionEditPictureViewResources.bundle */,
 			);
 			path = QXUIKitExtensionEditPictureView;
 			sourceTree = "<group>";
@@ -165,7 +174,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75A20BB724760D2C00E87239 /* QXUIKitExtensionEditPictureViewResources.bundle in Resources */,
 				75BB3DD0236BD5BD0065ADE5 /* LaunchScreen.storyboard in Resources */,
+				75A20BBB24760E2100E87239 /* close.png in Resources */,
 				75BB3DCD236BD5BD0065ADE5 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -221,6 +232,7 @@
 			files = (
 				75887877238E501400AA0EF6 /* QXEditPicturesView.swift in Sources */,
 				75BB3DDC236BDA890065ADE5 /* QXEditPictureView.swift in Sources */,
+				75A20BB924760DAC00E87239 /* QXUIKitExtensionEditPictureViewResources.swift in Sources */,
 				75BB3DDB236BDA890065ADE5 /* QXSettingPicturesCell.swift in Sources */,
 				75BB3DC8236BD5BC0065ADE5 /* ViewController.swift in Sources */,
 				75BB3DDD236BDA890065ADE5 /* QXSettingTitlePictureCell.swift in Sources */,
