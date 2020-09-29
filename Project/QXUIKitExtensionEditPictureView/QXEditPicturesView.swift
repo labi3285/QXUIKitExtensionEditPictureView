@@ -15,6 +15,8 @@ import QXConsMaker
 open class QXEditPicturesView: QXArrangeView {
     
     public var isGifEnabled: Bool = false
+    
+    public var isCameraOnly: Bool = false
 
     public var respondChange: ((_ images: [QXImage]) -> ())?
 
@@ -97,20 +99,36 @@ open class QXEditPicturesView: QXArrangeView {
         e.imageView.placeHolderImage = QXUIKitExtensionEditPictureViewResources.shared.image("icon_add_pic")
         e.respondClick = { [weak self] in
             if let s = self {
-                let c = s.maxPickCount - s.pictures.compactMap({ $0.phAsset == nil ? $0 : nil }).count
-                if let vc = TZImagePickerController(maxImagesCount: c, delegate: self) {
-                    vc.allowPickingGif = s.isGifEnabled
-                    vc.showSelectedIndex = true
-                    vc.alwaysEnableDoneBtn = true
-                    vc.allowPickingVideo = false
-                    let b = NSMutableArray()
-                    for e in s.pictures {
-                        if let e = e.phAsset {
-                            b.add(e)
-                        }
+                let c = s.maxPickCount - s.pictures.compactMap({ $0.phAsset == nil ? $0 : nil }).count                
+                if s.isCameraOnly {
+                    switch AVCaptureDevice.authorizationStatus(for: .video) {
+                    case .notDetermined, .authorized:
+                        let cameraPicker = UIImagePickerController()
+                        cameraPicker.delegate = self
+                        cameraPicker.sourceType = .camera
+                        s.uiViewController?.present(cameraPicker, animated: true, completion: nil)
+                    default:
+                        let alert = QXAlertController.confirm("提示", "您的相机访问受限，请检查设置", QXAction("去设置", {
+                            QXDevice.openUrl(UIApplication.openSettingsURLString, s.uiViewController)
+                        }), "取消")
+                        s.uiViewController?.present(alert, animated: true, completion: nil)
                     }
-                    vc.selectedAssets = b
-                    s.uiViewController?.present(vc, animated: true, completion: nil)
+                } else {
+                    if let vc = TZImagePickerController(maxImagesCount: c, delegate: self) {
+                        vc.allowPickingGif = s.isGifEnabled
+                        vc.allowTakePicture = true
+                        vc.showSelectedIndex = true
+                        vc.alwaysEnableDoneBtn = true
+                        vc.allowPickingVideo = false
+                        let b = NSMutableArray()
+                        for e in s.pictures {
+                            if let e = e.phAsset {
+                                b.add(e)
+                            }
+                        }
+                        vc.selectedAssets = b
+                        s.uiViewController?.present(vc, animated: true, completion: nil)
+                    }
                 }
             }
         }
@@ -161,6 +179,24 @@ open class QXEditPicturesView: QXArrangeView {
         fatalError("init(coder:) has not been implemented")
     }
             
+}
+
+extension QXEditPicturesView: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let uiImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+            let image = QXImage(uiImage)
+            self.pictures.append(image)
+            qxSetNeedsLayout()
+            respondChange?(pictures)
+        }
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
 }
 
 extension QXEditPicturesView: TZImagePickerControllerDelegate {

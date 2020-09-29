@@ -14,6 +14,8 @@ class ViewController: QXTableViewController<Any> {
     lazy var pictureCell: QXSettingTitlePictureCell = {
         let e = QXSettingTitlePictureCell()
         e.titleLabel.text = "选择图片"
+        e.pictureView.isEditEnabled = true
+//        e.pictureView.isCameraOnly = true
 //        e.pictureView.closeButton.image = QXImage("close")
         return e
     }()
@@ -23,6 +25,7 @@ class ViewController: QXTableViewController<Any> {
         
         let i = QXImage("close")
         e.picturesView.pictures = [i]
+//        e.picturesView.isCameraOnly = true
 //        e.picturesView.addView.image = QXImage("close")
 //        for e in e.picturesView.closeButtons {
 //            e.image = QXImage("close")

@@ -14,7 +14,7 @@ import QXConsMaker
 open class QXEditPictureView: QXPictureView {
             
     public var isGifEnabled: Bool = false
-    
+    public var isCameraOnly: Bool = false
     public var isEditEnabled: Bool = false
     public var editSize: QXSize = QXSize(min(UIScreen.main.bounds.height, UIScreen.main.bounds.width) - 15 * 2, min(UIScreen.main.bounds.height, UIScreen.main.bounds.width) - 15 * 2)
 
@@ -49,15 +49,31 @@ open class QXEditPictureView: QXPictureView {
         e.imageView.clipsToBounds = true
         e.respondClick = { [weak self] in
             if let s = self {
-                if let vc = TZImagePickerController(maxImagesCount: 1, delegate: self) {
-                    vc.allowPickingGif = s.isGifEnabled
-                    vc.allowCrop = s.isEditEnabled
-                    vc.allowPickingVideo = false
-                    s.uiViewController?.present(vc, animated: true, completion: nil)
-                    if s.isEditEnabled {
-                        let x = (vc.view.frame.width - s.editSize.w) / 2
-                        let y = (vc.view.frame.height - s.editSize.h) / 2
-                        vc.cropRect = CGRect(x: x, y: y, width: s.editSize.w, height: s.editSize.h)
+                if s.isCameraOnly {
+                    switch AVCaptureDevice.authorizationStatus(for: .video) {
+                    case .notDetermined, .authorized:
+                        let cameraPicker = UIImagePickerController()
+                        cameraPicker.delegate = self
+                        cameraPicker.sourceType = .camera
+                        cameraPicker.allowsEditing = s.isEditEnabled
+                        s.uiViewController?.present(cameraPicker, animated: true, completion: nil)
+                    default:
+                        let alert = QXAlertController.confirm("提示", "您的相机访问受限，请检查设置", QXAction("去设置", {
+                            QXDevice.openUrl(UIApplication.openSettingsURLString, s.uiViewController)
+                        }), "取消")
+                        s.uiViewController?.present(alert, animated: true, completion: nil)
+                    }
+                } else {
+                    if let vc = TZImagePickerController(maxImagesCount: 1, delegate: self) {
+                        vc.allowPickingGif = s.isGifEnabled
+                        vc.allowCrop = s.isEditEnabled
+                        vc.allowPickingVideo = false
+                        s.uiViewController?.present(vc, animated: true, completion: nil)
+                        if s.isEditEnabled {
+                            let x = (vc.view.frame.width - s.editSize.w) / 2
+                            let y = (vc.view.frame.height - s.editSize.h) / 2
+                            vc.cropRect = CGRect(x: x, y: y, width: s.editSize.w, height: s.editSize.h)
+                        }
                     }
                 }
             }
@@ -77,6 +93,26 @@ open class QXEditPictureView: QXPictureView {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+
+}
+
+extension QXEditPictureView: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        let source: UIImagePickerController.InfoKey = isEditEnabled ? .editedImage : .originalImage
+        if let uiImage = info[source] as? UIImage {
+            let image = QXImage(uiImage)
+            self.image = image
+            respondChange?(image)
+        }
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
 }
 
 extension QXEditPictureView: TZImagePickerControllerDelegate {
