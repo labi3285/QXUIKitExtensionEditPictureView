@@ -12,7 +12,7 @@ import QXConsMaker
 open class QXSettingPicturesCell: QXSettingCell {
     
     open override func height(_ model: Any?) -> CGFloat? {
-        picturesView.fixWidth = context.givenWidth
+        picturesView.fixWidth = (context?.givenWidth ?? 0)
         return picturesView.natureSize.h
     }
     

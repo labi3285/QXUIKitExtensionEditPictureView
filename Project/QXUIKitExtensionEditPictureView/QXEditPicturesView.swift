@@ -83,7 +83,7 @@ open class QXEditPicturesView: QXArrangeView {
             e.clipsToBounds = true
             e.fixSize = QXSize(90, 90)
             e.isDisplay = false
-            e.handlerPreview = { [weak self] in
+            e.respondPreview = { [weak self] in
                 self?.handlePreview(i)
             }
             e.addSubview(self.closeButtons[i])

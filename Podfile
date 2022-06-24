@@ -7,6 +7,5 @@ target 'Project' do
 
     pod 'QXUIKitExtension'
     pod 'QXUIKitExtensionPictureView'
-
-    pod 'TZImagePickerController', '~> 3.3.1'
+    pod 'TZImagePickerController', '~> 3.7.3'
 end
